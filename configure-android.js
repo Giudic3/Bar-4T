@@ -56,8 +56,8 @@ if (!fs.existsSync(keystoreFile)) {
 if (fs.existsSync(appGradlePath)) {
   let gradle = fs.readFileSync(appGradlePath, 'utf8');
   const runNum = parseInt(process.env.GITHUB_RUN_NUMBER || '0', 10);
-  const versionCode = runNum > 0 ? (150 + runNum) : (Math.floor(Date.now() / 60000) - 29000000);
-  const versionName = runNum > 0 ? `1.5.${runNum}` : '1.5.0';
+  const versionCode = runNum > 0 ? (170 + runNum) : (Math.floor(Date.now() / 60000) - 29000000);
+  const versionName = runNum > 0 ? `1.7.${runNum}` : '1.7.0';
 
   gradle = gradle.replace(/versionCode\s+\d+/, `versionCode ${versionCode}`);
   gradle = gradle.replace(/versionName\s+"[^"]+"/, `versionName "${versionName}"`);

@@ -378,6 +378,7 @@ table { border-collapse: collapse; }
               <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
               <span>Locale su Telefono (Offline)</span>
             </span>
+            <span class="px-2 py-0.5 rounded-full bg-slate-800 text-amber-300 font-bold">v1.7.0</span>
             <span id="nfcSupportBadge" class="hidden sm:inline text-slate-400"></span>
           </div>
         </div>
@@ -678,7 +679,7 @@ table { border-collapse: collapse; }
           <h3 class="font-bold text-base text-sky-400">3. Tessere Prepagate, Ricariche e QR Socio</h3>
           <div class="space-y-2 text-xs sm:text-sm text-slate-300">
             <p><b>➕ Nuova Tessera:</b> nella scheda <i>Tessere &amp; Ricariche</i> premi <b>Nuova Tessera</b>, scrivi Nome e Cognome, poi tocca <b>📡 Leggi NFC</b> e avvicina la tessera nuova al telefono per acquisirne automaticamente l'UID (oppure premi <b>QR</b> per generare una tessera digitale senza supporto fisico).</p>
-            <p><b>⚡ Controllo Saldo e Ricarica:</b> premi <b>📡 / 📷 Scansiona</b> per leggere una tessera o un QR e aprire la scheda del socio. Usa i tagli rapidi (<b>+€5</b>, <b>+€10</b>, <b>+€20</b>, <b>+€50</b>) o un importo libero. In caso di smarrimento puoi disabilitare la tessera con <b>🔒 Blocca Tessera</b>.</p>
+            <p><b>⚡ Controllo Saldo e Ricarica:</b> premi <b>📡 / 📷 Scansiona</b> per leggere una tessera o un QR e aprire la scheda del socio. Usa i tagli rapidi (<b>+€5</b>, <b>+€10</b>, <b>+€20</b>, <b>+€50</b>) o un importo libero. In caso di smarrimento puoi disabilitarla con <b>🔒 Blocca Tessera</b> oppure rimuoverla definitivamente con <b>🗑️ Elimina Tessera</b> (lo storico movimenti resta conservato).</p>
             <p><b>📱 Pass Digitale Brandizzato (Logo 4T 1948):</b> toccando <b>📱 QR</b> su un socio si apre la tessera digitale con il logo <b>4T 1948</b> al centro del QR Code, pronta da scaricare in <b>PNG</b>, inviare su <b>WhatsApp</b> o stampare.</p>
           </div>
         </article>
@@ -856,6 +857,7 @@ table { border-collapse: collapse; }
         <button id="cdToggleStatusBtn" onclick="toggleCurrentCardStatus()" class="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm font-bold"></button>
         <button onclick="openQrPassForCurrent()" class="flex-1 py-2.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 text-sm font-bold border border-sky-500/30">📱 QR Socio</button>
       </div>
+      <button onclick="deleteCurrentCard()" class="w-full py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-sm font-bold">🗑️ Elimina Tessera</button>
     </div>
   </div>
 
@@ -872,10 +874,11 @@ table { border-collapse: collapse; }
         <div id="qrPassContainer" class="flex justify-center py-1"></div>
         <div id="qrPassUid" class="text-xs font-mono text-slate-500"></div>
       </div>
+      <div id="qrPassFeedback" class="hidden p-2.5 rounded-xl text-xs"></div>
       <div class="grid grid-cols-3 gap-2">
-        <button onclick="downloadQrPng()" class="py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs">⬇️ PNG</button>
-        <button onclick="shareQrPass()" class="py-2.5 rounded-xl bg-sky-500 text-slate-950 font-bold text-xs">📤 Condividi</button>
-        <button onclick="window.print()" class="py-2.5 rounded-xl bg-slate-800 text-slate-200 font-bold text-xs">🖨️ Stampa</button>
+        <button onclick="downloadQrPng()" class="py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs">⬇️ PNG</button>
+        <button onclick="shareQrPass()" class="py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs">📤 Condividi</button>
+        <button onclick="printQrPass()" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs">🖨️ Stampa</button>
       </div>
     </div>
   </div>
@@ -1410,6 +1413,7 @@ table { border-collapse: collapse; }
             <div class="flex gap-1.5">
               <button onclick="openQrPass('${c.uid}')" class="px-2.5 py-1.5 rounded-lg bg-sky-500/20 text-sky-300 text-xs font-bold">📱 QR</button>
               <button onclick="openCardDetail('${c.uid}')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold">Gestisci</button>
+              <button onclick="deleteCardByUid('${c.uid}')" title="Elimina tessera" class="px-2.5 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-bold">🗑️</button>
             </div>
           </div>
         </div>
@@ -1520,6 +1524,34 @@ table { border-collapse: collapse; }
       renderAll();
     }
 
+    function deleteCardByUid(uid) {
+      const card = state.cards.find(c => c.uid === uid);
+      if (!card) return;
+      const residual = Number(card.balance || 0);
+      const msg = residual > 0
+        ? `Attenzione: la tessera di ${card.holder} (${card.uid}) ha ancora un saldo residuo di ${fmtEur(residual)}.\n\nVuoi eliminarla definitivamente? (Lo storico movimenti resterà conservato)`
+        : `Eliminare definitivamente la tessera di ${card.holder} (${card.uid})? (Lo storico movimenti resterà conservato)`;
+      if (!confirm(msg)) return;
+
+      state.cards = state.cards.filter(c => c.uid !== uid);
+      if (activeCardUid === uid) {
+        activeCardUid = null;
+        document.getElementById('cardDetailModal').classList.add('hidden');
+      }
+      if (currentQrPassCard && currentQrPassCard.uid === uid) {
+        currentQrPassCard = null;
+        document.getElementById('qrPassModal').classList.add('hidden');
+      }
+      saveLocal();
+      beep(true);
+      renderAll();
+    }
+
+    function deleteCurrentCard() {
+      if (!activeCardUid) return;
+      deleteCardByUid(activeCardUid);
+    }
+
     // ===== QR PASS =====
     function openQrPassForCurrent() {
       document.getElementById('cardDetailModal').classList.add('hidden');
@@ -1608,11 +1640,37 @@ table { border-collapse: collapse; }
         qrCanvas.style.display = 'block';
         if (qrImg) qrImg.style.display = 'none';
       }
+      const qrFb = document.getElementById('qrPassFeedback');
+      if (qrFb) qrFb.classList.add('hidden');
       document.getElementById('qrPassModal').classList.remove('hidden');
+    }
+
+    function showQrPassFeedback(ok, message) {
+      const fb = document.getElementById('qrPassFeedback');
+      if (!fb) return;
+      fb.classList.remove('hidden');
+      fb.className = ok
+        ? 'p-2.5 rounded-xl text-xs bg-emerald-500/20 border border-emerald-500/40 text-emerald-200'
+        : 'p-2.5 rounded-xl text-xs bg-rose-500/20 border border-rose-500/40 text-rose-200';
+      fb.innerHTML = message;
+    }
+
+    function dataUrlToBlob(dataUrl) {
+      const parts = dataUrl.split(',');
+      const mimeMatch = parts[0].match(/:(.*?);/);
+      const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+      const binStr = atob(parts[1]);
+      const len = binStr.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binStr.charCodeAt(i);
+      }
+      return new Blob([bytes], { type: mime });
     }
 
     function buildQrCardCanvas() {
       const srcCanvas = document.querySelector('#qrPassContainer canvas');
+      const srcImg = document.querySelector('#qrPassContainer img');
       const c = document.createElement('canvas');
       c.width = 440; c.height = 560;
       const ctx = c.getContext('2d');
@@ -1622,7 +1680,11 @@ table { border-collapse: collapse; }
       ctx.fillText('BAR 4 TORRI • TESSERA SOCIO', 220, 54);
       ctx.fillStyle = '#0f172a'; ctx.font = 'bold 28px sans-serif';
       ctx.fillText(currentQrPassCard.holder, 220, 145);
-      if (srcCanvas) ctx.drawImage(srcCanvas, 100, 180, 240, 240);
+      if (srcCanvas) {
+        ctx.drawImage(srcCanvas, 100, 180, 240, 240);
+      } else if (srcImg && srcImg.complete && srcImg.naturalWidth > 0) {
+        ctx.drawImage(srcImg, 100, 180, 240, 240);
+      }
       ctx.fillStyle = '#64748b'; ctx.font = '18px monospace';
       ctx.fillText(currentQrPassCard.uid, 220, 470);
       ctx.fillStyle = '#94a3b8'; ctx.font = '14px sans-serif';
@@ -1630,24 +1692,60 @@ table { border-collapse: collapse; }
       return c;
     }
 
-    function downloadQrPng() {
+    function getQrPassFileData() {
+      if (!currentQrPassCard) throw new Error('Nessuna tessera selezionata');
       const c = buildQrCardCanvas();
-      const a = document.createElement('a');
-      a.download = `tessera_bar4torri_${currentQrPassCard.holder.replace(/\s+/g, '_')}.png`;
-      a.href = c.toDataURL('image/png');
-      a.click();
+      const dataUrl = c.toDataURL('image/png');
+      const blob = dataUrlToBlob(dataUrl);
+      const safeHolder = String(currentQrPassCard.holder || 'socio')
+        .trim()
+        .replace(/[^a-zA-Z0-9_-]+/g, '_')
+        .replace(/^_+|_+$/g, '') || 'socio';
+      const filename = `tessera_bar4torri_${safeHolder}.png`;
+      return { blob, filename };
+    }
+
+    async function downloadQrPng() {
+      try {
+        const { blob, filename } = getQrPassFileData();
+        const savedPath = await saveFileCrossPlatform(blob, filename, 'image/png');
+        beep(true);
+        showQrPassFeedback(true, `<b>✅ Tessera PNG salvata!</b><br/>Posizione: <span class="font-mono">${savedPath}</span>`);
+      } catch (err) {
+        beep(false);
+        showQrPassFeedback(false, `<b>Errore salvataggio PNG:</b> ${err.message || err}`);
+      }
     }
 
     async function shareQrPass() {
-      const c = buildQrCardCanvas();
-      c.toBlob(async (blob) => {
-        const file = new File([blob], 'tessera_bar4torri.png', { type: 'image/png' });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({ title: 'Tessera Bar 4 Torri', text: `Tessera di ${currentQrPassCard.holder} - Bar 4 Torri`, files: [file] });
+      try {
+        const { blob, filename } = getQrPassFileData();
+        const shared = await shareFileCrossPlatform(
+          blob,
+          filename,
+          'image/png',
+          'Tessera Bar 4 Torri',
+          `Tessera digitale di ${currentQrPassCard.holder} (${currentQrPassCard.uid}) - Bar 4 Torri`
+        );
+        beep(true);
+        if (shared) {
+          showQrPassFeedback(true, '<b>✅ Finestra di condivisione aperta!</b> Scegli WhatsApp, Drive, Email o stampa.');
         } else {
-          downloadQrPng();
+          showQrPassFeedback(true, `<b>✅ Tessera PNG scaricata in locale:</b> ${filename}`);
         }
-      });
+      } catch (err) {
+        if (err && err.name === 'AbortError') return;
+        beep(false);
+        showQrPassFeedback(false, `<b>Errore condivisione QR:</b> ${err.message || err}`);
+      }
+    }
+
+    function printQrPass() {
+      if (getNativeFilePlugin()) {
+        shareQrPass();
+      } else {
+        window.print();
+      }
     }
 
     // ===== CATALOG & TRANSACTIONS =====
@@ -2314,10 +2412,10 @@ table { border-collapse: collapse; }
         const info = await livePlugin.getBundleInfo();
         if (info && info.isLiveActive) {
           badge.className = 'px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold';
-          badge.textContent = `Aggiornato: ${info.updatedAt || 'Live'}`;
+          badge.textContent = `v1.7.0 • Live (${info.updatedAt || 'Attivo'})`;
           if (resetBtn) resetBtn.classList.remove('hidden');
         } else {
-          badge.textContent = 'Versione Integrata APK';
+          badge.textContent = 'v1.7.0 • Integrata APK';
           if (resetBtn) resetBtn.classList.add('hidden');
         }
       } catch {}
@@ -2336,6 +2434,10 @@ table { border-collapse: collapse; }
 
       try {
         showLiveUpdateFeedback(true, '⏳ Installazione pacchetto aggiornamento in corso...');
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map(k => caches.delete(k)));
+        }
         const base64 = await blobToBase64(file);
         await livePlugin.applyZipUpdate({ base64, sourceLabel: file.name });
         beep(true);
@@ -2362,6 +2464,10 @@ table { border-collapse: collapse; }
 
       try {
         showLiveUpdateFeedback(true, `⏳ Download aggiornamento da <b>${repo}</b> (${branch}) in corso...`);
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map(k => caches.delete(k)));
+        }
         await livePlugin.updateFromGitHub({ repo, branch, token });
         beep(true);
         showLiveUpdateFeedback(true, '<b>✅ App aggiornata da GitHub!</b> Ricaricamento interfaccia in corso...');

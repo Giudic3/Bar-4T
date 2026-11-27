@@ -1,6 +1,6 @@
 {
   "name": "bar-4-torri-pos-offline",
-  "version": "1.5.0",
+  "version": "1.7.0",
   "description": "App Android POS standalone offline per Bar 4 Torri con NFC nativo, QR Code, Firma Fissa e Live Update",
   "scripts": {
     "android:init": "npx cap add android",
