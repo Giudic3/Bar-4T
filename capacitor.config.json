@@ -1,0 +1,8 @@
+{
+  "appId": "com.bar4torri.pos.offline",
+  "appName": "Bar 4 Torri POS",
+  "webDir": "public",
+  "server": {
+    "androidScheme": "https"
+  }
+}

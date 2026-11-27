@@ -1,0 +1,20 @@
+====================================================================
+  BAR 4 TORRI - POS NFC NATIVO & QR (APK ANDROID) - V7
+====================================================================
+
+Questa versione integra un plugin Java nativo (NativeNfcPlugin.java)
+basato direttamente sulle API ufficiali Android NfcAdapter.enableReaderMode,
+senza dipendenze npm esterne o librerie Kotlin che possano bloccare Gradle.
+
+--------------------------------------------------------------------
+COMPILAZIONE SU GITHUB ACTIONS (CONSIGLIATA)
+--------------------------------------------------------------------
+1. Estrai questo ZIP sul PC.
+2. Nel tuo repository GitHub assicurati che la struttura sia:
+   - package.json
+   - capacitor.config.json
+   - configure-android.js
+   - public/ (con index.html, logo-4t.png, manifest.json, sw.js, icone)
+   - .github/workflows/build-apk.yml
+3. Vai su Actions -> Build Bar 4 Torri POS APK -> Run workflow.
+4. Al termine scarica "Bar4TorriPOS-APK" dagli Artifacts in basso.

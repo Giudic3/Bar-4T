@@ -1,0 +1,2401 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Bar 4 Torri • POS NFC &amp; QR</title>
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/png" href="./icon-192.png" />
+
+  <script defer src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+  <script>
+    // Timer indipendente di sicurezza: chiude sempre lo splash screen anche offline o in caso di errore CDN
+    window.dismissSplash = function () {
+      var el = document.getElementById('appSplashOverlay');
+      if (!el || el.dataset.closing) return;
+      el.dataset.closing = '1';
+      el.style.opacity = '0';
+      el.style.pointerEvents = 'none';
+      setTimeout(function () {
+        if (el && el.parentNode) el.parentNode.removeChild(el);
+      }, 450);
+    };
+    setTimeout(window.dismissSplash, 1750);
+    setTimeout(function () {
+      var el = document.getElementById('appSplashOverlay');
+      if (el && el.parentNode) el.parentNode.removeChild(el);
+    }, 3200);
+  </script>
+  <style>
+/* ===== BAR 4 TORRI OFFLINE COMPLETE UI STYLESHEET ===== */
+*, *::before, *::after { box-sizing: border-box; border-color: #1e293b; }
+body { margin: 0; background-color: #020617; color: #f1f5f9; -webkit-tap-highlight-color: transparent; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; border: none; }
+table { border-collapse: collapse; }
+@keyframes pulseAnim { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+.absolute { position: absolute; }
+.active\:scale-95:active { transform: scale(0.95); }
+.animate-pulse { animation: pulseAnim 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+.aspect-square { aspect-ratio: 1 / 1; }
+.backdrop-blur-sm { backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.bg-\[\#171a1e\] { background-color: #171a1e; }
+.bg-amber-400 { background-color: #fbbf24; }
+.bg-amber-500\/10 { background-color: rgba(245, 158, 11, 0.1); }
+.bg-amber-500\/20 { background-color: rgba(245, 158, 11, 0.2); }
+.bg-black { background-color: #000000; }
+.bg-black\/80 { background-color: rgba(0, 0, 0, 0.8); }
+.bg-emerald-400 { background-color: #34d399; }
+.bg-emerald-500 { background-color: #10b981; }
+.bg-emerald-500\/15 { background-color: rgba(16, 185, 129, 0.15); }
+.bg-emerald-500\/20 { background-color: rgba(16, 185, 129, 0.2); }
+.bg-gradient-to-r { background-image: linear-gradient(to right, var(--tw-gradient-from, #10b981), var(--tw-gradient-via, #34d399), var(--tw-gradient-to, #bef264)); }
+.bg-gradient-to-t { background-image: linear-gradient(to top, var(--tw-gradient-from, #141013), var(--tw-gradient-via, rgba(20,16,19,0.95)), var(--tw-gradient-to, transparent)); }
+.bg-rose-500 { background-color: #f43f5e; }
+.bg-rose-500\/15 { background-color: rgba(244, 63, 94, 0.15); }
+.bg-rose-500\/20 { background-color: rgba(244, 63, 94, 0.2); }
+.bg-sky-500 { background-color: #0ea5e9; }
+.bg-sky-500\/20 { background-color: rgba(14, 165, 233, 0.2); }
+.bg-slate-800 { background-color: #1e293b; }
+.bg-slate-800\/80 { background-color: rgba(30, 41, 59, 0.8); }
+.bg-slate-900 { background-color: #0f172a; }
+.bg-slate-900\/90 { background-color: rgba(15, 23, 42, 0.9); }
+.bg-slate-950 { background-color: #020617; }
+.bg-slate-950\/70 { background-color: rgba(2, 6, 23, 0.7); }
+.bg-white { background-color: #ffffff; }
+.block { display: block; }
+.border { border-width: 1px; border-style: solid; }
+.border-amber-400\/30 { border-color: rgba(251, 191, 36, 0.3); }
+.border-amber-400\/40 { border-color: rgba(251, 191, 36, 0.4); }
+.border-amber-500\/30 { border-color: rgba(245, 158, 11, 0.3); }
+.border-amber-500\/40 { border-color: rgba(245, 158, 11, 0.4); }
+.border-b { border-bottom-width: 1px; border-bottom-style: solid; }
+.border-emerald-500\/30 { border-color: rgba(16, 185, 129, 0.3); }
+.border-emerald-500\/40 { border-color: rgba(16, 185, 129, 0.4); }
+.border-rose-500\/30 { border-color: rgba(244, 63, 94, 0.3); }
+.border-rose-500\/40 { border-color: rgba(244, 63, 94, 0.4); }
+.border-sky-500\/30 { border-color: rgba(14, 165, 233, 0.3); }
+.border-slate-700 { border-color: #334155; }
+.border-slate-800 { border-color: #1e293b; }
+.border-t { border-top-width: 1px; border-top-style: solid; }
+.bottom-0 { bottom: 0px; }
+.cursor-pointer { cursor: pointer; }
+.disabled\:bg-slate-800:disabled { background-color: #1e293b; }
+.disabled\:text-slate-500:disabled { color: #64748b; }
+.divide-slate-800\/70 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(30, 41, 59, 0.7); }
+.divide-y > :not([hidden]) ~ :not([hidden]) { border-top-width: 1px; border-top-style: solid; }
+.drop-shadow-\[0_6px_14px_rgba\(234\,88\,12\,0\.5\)\] { filter: drop-shadow(0 6px 14px rgba(234,88,12,0.5)); }
+.duration-500 { transition-duration: 500ms; }
+.fixed { position: fixed; }
+.flex { display: flex; }
+.flex-1 { flex: 1 1 0%; }
+.flex-col { flex-direction: column; }
+.flex-wrap { flex-wrap: wrap; }
+.focus\:border-emerald-500:focus { border-color: #10b981; }
+.focus\:outline-none:focus { outline: 2px solid transparent; outline-offset: 2px; }
+.font-black { font-weight: 900; }
+.font-bold { font-weight: 700; }
+.font-medium { font-weight: 500; }
+.font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+.font-semibold { font-weight: 600; }
+.from-\[\#141013\] { --tw-gradient-from: #141013; }
+.from-emerald-500 { --tw-gradient-from: #10b981; }
+.gap-1 { gap: 0.25rem; }
+.gap-1\.5 { gap: 0.375rem; }
+.gap-2 { gap: 0.5rem; }
+.gap-2\.5 { gap: 0.625rem; }
+.gap-3 { gap: 0.75rem; }
+.gap-4 { gap: 1rem; }
+.grid { display: grid; }
+.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+.grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.h-0\.5 { height: 0.125rem; }
+.h-10 { height: 2.5rem; }
+.h-12 { height: 3rem; }
+.h-14 { height: 3.5rem; }
+.h-2 { height: 0.5rem; }
+.h-3 { height: 0.75rem; }
+.h-7 { height: 1.75rem; }
+.h-8 { height: 2rem; }
+.h-fit { height: fit-content; }
+.h-full { height: 100%; }
+.hidden { display: none !important; }
+.hover\:bg-emerald-400:hover { background-color: #34d399; }
+.hover\:bg-emerald-500\/30:hover { background-color: rgba(16, 185, 129, 0.3); }
+.hover\:bg-rose-400:hover { background-color: #fb7185; }
+.hover\:bg-rose-500\/25:hover { background-color: rgba(244, 63, 94, 0.25); }
+.hover\:bg-sky-400:hover { background-color: #38bdf8; }
+.hover\:bg-sky-500\/30:hover { background-color: rgba(14, 165, 233, 0.3); }
+.hover\:bg-slate-700:hover { background-color: #334155; }
+.hover\:bg-slate-800:hover { background-color: #1e293b; }
+.hover\:text-rose-300:hover { color: #fda4af; }
+.inline-flex { display: inline-flex; }
+.inset-0 { inset: 0px; }
+.inset-x-0 { left: 0px; right: 0px; }
+.inset-x-6 { left: 1.5rem; right: 1.5rem; }
+.items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.leading-relaxed { line-height: 1.625; }
+.leading-snug { line-height: 1.375; }
+.leading-tight { line-height: 1.25; }
+.list-decimal { list-style-type: decimal; }
+.list-disc { list-style-type: disc; }
+.list-inside { list-style-position: inside; }
+.max-h-64 { max-height: 16rem; }
+.max-h-72 { max-height: 18rem; }
+.max-h-\[92vh\] { max-height: 92vh; }
+.max-w-7xl { max-width: 80rem; }
+.max-w-full { max-width: 100%; }
+.max-w-md { max-width: 28rem; }
+.max-w-sm { max-width: 24rem; }
+.mb-0\.5 { margin-bottom: 0.125rem; }
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 0.75rem; }
+.min-h-screen { min-height: 100vh; }
+.min-w-0 { min-width: 0px; }
+.ml-1 { margin-left: 0.25rem; }
+.mr-1 { margin-right: 0.25rem; }
+.mt-0\.5 { margin-top: 0.125rem; }
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-4 { margin-top: 1rem; }
+.mx-auto { margin-left: auto; margin-right: auto; }
+.object-cover { object-fit: cover; }
+.object-top { object-position: top; }
+.overflow-hidden { overflow: hidden; }
+.overflow-x-auto { overflow-x: auto; }
+.overflow-y-auto { overflow-y: auto; }
+.p-0\.5 { padding: 0.125rem; }
+.p-1 { padding: 0.25rem; }
+.p-2 { padding: 0.5rem; }
+.p-2\.5 { padding: 0.625rem; }
+.p-3 { padding: 0.75rem; }
+.p-4 { padding: 1rem; }
+.p-5 { padding: 1.25rem; }
+.pb-1 { padding-bottom: 0.25rem; }
+.pb-2 { padding-bottom: 0.5rem; }
+.pb-28 { padding-bottom: 7rem; }
+.pb-9 { padding-bottom: 2.25rem; }
+.pl-4 { padding-left: 1rem; }
+.pointer-events-none { pointer-events: none; }
+.pr-1 { padding-right: 0.25rem; }
+.pr-3 { padding-right: 0.75rem; }
+.pt-1 { padding-top: 0.25rem; }
+.pt-1\.5 { padding-top: 0.375rem; }
+.pt-14 { padding-top: 3.5rem; }
+.pt-2 { padding-top: 0.5rem; }
+.pt-3 { padding-top: 0.75rem; }
+.px-1\.5 { padding-left: 0.375rem; padding-right: 0.375rem; }
+.px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+.px-2\.5 { padding-left: 0.625rem; padding-right: 0.625rem; }
+.px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+.px-3\.5 { padding-left: 0.875rem; padding-right: 0.875rem; }
+.px-4 { padding-left: 1rem; padding-right: 1rem; }
+.px-5 { padding-left: 1.25rem; padding-right: 1.25rem; }
+.px-8 { padding-left: 2rem; padding-right: 2rem; }
+.py-0\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+.py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+.py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+.py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+.py-2\.5 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
+.py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+.py-3\.5 { padding-top: 0.875rem; padding-bottom: 0.875rem; }
+.py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+.py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+.py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+.relative { position: relative; }
+.rounded { border-radius: 0.25rem; }
+.rounded-2xl { border-radius: 1rem; }
+.rounded-full { border-radius: 9999px; }
+.rounded-lg { border-radius: 0.5rem; }
+.rounded-xl { border-radius: 0.75rem; }
+.select-none { user-select: none; }
+.shadow { box-shadow: 0 1px 3px 0 rgba(0,0,0,0.35), 0 1px 2px -1px rgba(0,0,0,0.35); }
+.shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7); }
+.shadow-\[0_0_12px_\#34d399\] { box-shadow: 0 0 12px #34d399; }
+.shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.45), 0 4px 6px -4px rgba(0,0,0,0.45); }
+.shadow-md { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.4), 0 2px 4px -2px rgba(0,0,0,0.4); }
+.space-y-1 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.25rem; }
+.space-y-1\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.375rem; }
+.space-y-2 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.5rem; }
+.space-y-2\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.625rem; }
+.space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem; }
+.space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem; }
+.sticky { position: sticky; }
+.text-2xl { font-size: 1.5rem; line-height: 2rem; }
+.text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+.text-5xl { font-size: 3rem; line-height: 1; }
+.text-\[11px\] { font-size: 11px; line-height: 1.35; }
+.text-amber-200 { color: #fde68a; }
+.text-amber-300 { color: #fcd34d; }
+.text-amber-300\/80 { color: rgba(252, 211, 77, 0.8); }
+.text-amber-400 { color: #fbbf24; }
+.text-base { font-size: 1rem; line-height: 1.5rem; }
+.text-center { text-align: center; }
+.text-emerald-200 { color: #a7f3d0; }
+.text-emerald-300 { color: #6ee7b7; }
+.text-emerald-400 { color: #34d399; }
+.text-emerald-600 { color: #059669; }
+.text-left { text-align: left; }
+.text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+.text-orange-400 { color: #fb923c; }
+.text-purple-300 { color: #d8b4fe; }
+.text-purple-400 { color: #c084fc; }
+.text-right { text-align: right; }
+.text-rose-200 { color: #fecdd3; }
+.text-rose-300 { color: #fda4af; }
+.text-rose-400 { color: #fb7185; }
+.text-sky-300 { color: #7dd3fc; }
+.text-sky-400 { color: #38bdf8; }
+.text-slate-100 { color: #f1f5f9; }
+.text-slate-200 { color: #e2e8f0; }
+.text-slate-300 { color: #cbd5e1; }
+.text-slate-400 { color: #94a3b8; }
+.text-slate-500 { color: #64748b; }
+.text-slate-900 { color: #0f172a; }
+.text-slate-950 { color: #020617; }
+.text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+.text-white { color: #ffffff; }
+.text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+.text-xs { font-size: 0.75rem; line-height: 1rem; }
+.to-lime-300 { --tw-gradient-to: #bef264; }
+.to-transparent { --tw-gradient-to: transparent; }
+.top-0 { top: 0px; }
+.top-28 { top: 7rem; }
+.tracking-wide { letter-spacing: 0.025em; }
+.tracking-widest { letter-spacing: 0.1em; }
+.transition { transition-property: all; transition-duration: 150ms; }
+.transition-opacity { transition-property: opacity; transition-duration: 150ms; }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.uppercase { text-transform: uppercase; }
+.via-emerald-400 { --tw-gradient-via: #34d399; }
+.w-10 { width: 2.5rem; }
+.w-12 { width: 3rem; }
+.w-14 { width: 3.5rem; }
+.w-2 { width: 0.5rem; }
+.w-5 { width: 1.25rem; }
+.w-60 { width: 15rem; }
+.w-7 { width: 1.75rem; }
+.w-8 { width: 2rem; }
+.w-full { width: 100%; }
+.whitespace-nowrap { white-space: nowrap; }
+.z-20 { z-index: 20; }
+.z-30 { z-index: 30; }
+.z-50 { z-index: 50; }
+.z-\[100\] { z-index: 100; }
+@media (min-width: 640px) {
+  .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sm\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .sm\:inline { display: inline; }
+  .sm\:text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+  .sm\:w-64 { width: 16rem; }
+}
+@media (min-width: 768px) {
+  .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (min-width: 1024px) {
+  .lg\:col-span-4 { grid-column: span 4 / span 4; }
+  .lg\:col-span-8 { grid-column: span 8 / span 8; }
+  .lg\:grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+  .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .lg\:hidden { display: none !important; }
+  .lg\:pb-6 { padding-bottom: 1.5rem; }
+}
+    #appSplashOverlay { position: fixed; inset: 0; z-index: 9999; background-color: #171a1e; display: flex; flex-direction: column; align-items: center; justify-content: space-between; overflow: hidden; transition: opacity 0.45s ease; }
+    .scan-line { animation: scanMove 2s linear infinite; }
+    @keyframes scanMove { 0% { top: 8%; } 50% { top: 88%; } 100% { top: 8%; } }
+    .tab-active { background: #10b981 !important; color: #0f172a !important; font-weight: 700 !important; }
+    @media print {
+      body * { visibility: hidden; }
+      #printCardArea, #printCardArea * { visibility: visible; }
+      #printCardArea { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: white; }
+    }
+    @keyframes splashLoad { 0% { width: 12%; } 60% { width: 78%; } 100% { width: 100%; } }
+    .splash-bar-fill { animation: splashLoad 1.65s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+    @keyframes spinBasketball { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .bball-spin { animation: spinBasketball 1.05s linear infinite; transform-origin: 50% 50%; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+
+  <!-- SPLASH SCREEN BAR 4 TORRI -->
+  <div id="appSplashOverlay" onclick="dismissSplash()" class="fixed inset-0 z-[100] bg-[#171a1e] flex flex-col items-center justify-between overflow-hidden transition-opacity duration-500">
+    <img src="./splash-screen.png" alt="Bar 4 Torri" class="w-full h-full object-cover object-top select-none pointer-events-none" />
+    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#141013] via-[#141013]/95 to-transparent pt-14 pb-9 px-8 flex flex-col items-center gap-2.5">
+      <!-- Palla da basket animata che gira -->
+      <div class="relative w-14 h-14 mb-0.5 flex items-center justify-center">
+        <svg viewBox="0 0 100 100" class="w-14 h-14 bball-spin drop-shadow-[0_6px_14px_rgba(234,88,12,0.5)]" aria-hidden="true">
+          <defs>
+            <radialGradient id="bballBase" cx="42%" cy="38%" r="62%">
+              <stop offset="0%" stop-color="#fb923c" />
+              <stop offset="55%" stop-color="#ea580c" />
+              <stop offset="100%" stop-color="#9a3412" />
+            </radialGradient>
+            <clipPath id="bballClip">
+              <circle cx="50" cy="50" r="46" />
+            </clipPath>
+          </defs>
+          <circle cx="50" cy="50" r="46" fill="url(#bballBase)" />
+          <g clip-path="url(#bballClip)" stroke="#291005" stroke-width="3.6" stroke-linecap="round" fill="none">
+            <line x1="50" y1="2" x2="50" y2="98" />
+            <line x1="2" y1="50" x2="98" y2="50" />
+            <path d="M 16 13 C 38 34, 38 66, 16 87" />
+            <path d="M 84 13 C 62 34, 62 66, 84 87" />
+          </g>
+          <circle cx="50" cy="50" r="46" fill="none" stroke="#431407" stroke-width="2.5" />
+        </svg>
+        <div class="pointer-events-none absolute inset-0 rounded-full" style="background: radial-gradient(circle at 32% 28%, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.06) 36%, rgba(0,0,0,0.34) 100%);"></div>
+      </div>
+      <div class="w-60 max-w-full h-3 rounded-full bg-slate-900/90 border border-amber-400/40 p-0.5 overflow-hidden shadow-lg">
+        <div class="h-full rounded-full bg-gradient-to-r from-emerald-500 via-emerald-400 to-lime-300 splash-bar-fill"></div>
+      </div>
+      <div class="text-xs font-semibold tracking-wide text-slate-200">Caricamento in corso...</div>
+      <div class="text-[11px] font-medium text-amber-300/80 uppercase tracking-widest">Cassa &amp; Tessere</div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-3 py-2.5 flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5">
+        <img src="./icon-192.png" alt="Bar 4 Torri" class="w-10 h-10 rounded-xl shadow-md object-cover border border-amber-400/30" />
+        <div>
+          <h1 class="font-bold text-base leading-tight">Bar 4 Torri • POS NFC &amp; QR</h1>
+          <div class="flex items-center gap-2 text-xs text-slate-400">
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 font-medium">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span>Locale su Telefono (Offline)</span>
+            </span>
+            <span id="nfcSupportBadge" class="hidden sm:inline text-slate-400"></span>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="btnInstallPwa" class="hidden px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow">📲 Installa App</button>
+        <button onclick="exportJSON()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium border border-slate-700">💾 Backup</button>
+      </div>
+    </div>
+
+    <!-- NAV TABS -->
+    <nav class="max-w-7xl mx-auto px-3 pb-2 flex gap-1.5 overflow-x-auto">
+      <button onclick="switchTab('pos')" id="tab-pos" class="tab-btn tab-active px-3.5 py-2 rounded-xl text-sm whitespace-nowrap transition">🛒 Cassa Bar</button>
+      <button onclick="switchTab('cards')" id="tab-cards" class="tab-btn bg-slate-800/80 hover:bg-slate-800 text-slate-300 px-3.5 py-2 rounded-xl text-sm whitespace-nowrap transition">💳 Tessere &amp; Ricariche</button>
+      <button onclick="switchTab('catalog')" id="tab-catalog" class="tab-btn bg-slate-800/80 hover:bg-slate-800 text-slate-300 px-3.5 py-2 rounded-xl text-sm whitespace-nowrap transition">📋 Listino &amp; Movimenti</button>
+      <button onclick="switchTab('backup')" id="tab-backup" class="tab-btn bg-slate-800/80 hover:bg-slate-800 text-slate-300 px-3.5 py-2 rounded-xl text-sm whitespace-nowrap transition">💾 Dati &amp; Backup</button>
+      <button onclick="switchTab('manual')" id="tab-manual" class="tab-btn bg-slate-800/80 hover:bg-slate-800 text-slate-300 px-3.5 py-2 rounded-xl text-sm whitespace-nowrap transition">📖 Manuale</button>
+    </nav>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="max-w-7xl w-full mx-auto px-3 py-4 flex-1 pb-28 lg:pb-6">
+
+    <!-- TAB 1: POS CASSA BAR -->
+    <section id="view-pos" class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <div class="lg:col-span-8 space-y-3">
+        <div id="categoryFilters" class="flex gap-1.5 overflow-x-auto pb-1"></div>
+        <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5"></div>
+      </div>
+
+      <!-- CART (Desktop Sidebar) -->
+      <aside class="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col h-fit sticky top-28">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="font-bold text-base">🧾 Scontrino Corrente</h2>
+          <button onclick="clearCart()" class="text-xs text-rose-400 hover:text-rose-300">Svuota</button>
+        </div>
+        <div id="cartItems" class="space-y-2 max-h-72 overflow-y-auto pr-1 text-sm"></div>
+        <div class="border-t border-slate-800 mt-4 pt-3 space-y-3">
+          <div class="flex justify-between items-center text-lg font-black">
+            <span>Totale</span>
+            <span id="cartTotal" class="text-emerald-400">€ 0,00</span>
+          </div>
+          <button onclick="openScanModal('charge')" id="btnPay" disabled class="w-full py-3.5 rounded-xl bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-500 hover:bg-emerald-400 text-slate-950 font-black text-base transition shadow-lg">
+            📡 / 📷 INCASSA CON NFC O QR
+          </button>
+        </div>
+      </aside>
+    </section>
+
+    <!-- TAB 2: TESSERE & RICARICHE -->
+    <section id="view-cards" class="hidden space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between gap-3">
+          <div>
+            <h2 class="font-bold text-base">Controllo Saldo &amp; Ricarica Rapida</h2>
+            <p class="text-xs text-slate-400">Avvicina la tessera NFC o inquadra il QR dello smartphone</p>
+          </div>
+          <button onclick="openScanModal('lookup')" class="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-sm whitespace-nowrap">📡 / 📷 Scansiona</button>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between gap-3">
+          <div>
+            <h2 class="font-bold text-base">Nuova Tessera Socio</h2>
+            <p class="text-xs text-slate-400">Abbina tessera fisica NFC o crea tessera Solo QR</p>
+          </div>
+          <button onclick="openNewCardModal()" class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm whitespace-nowrap">➕ Nuova Tessera</button>
+        </div>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h3 class="font-bold">Elenco Tessere Bar 4 Torri</h3>
+          <input id="cardSearch" oninput="renderCards()" type="text" placeholder="Cerca socio o UID..." class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-sm w-full sm:w-64 focus:outline-none focus:border-emerald-500" />
+        </div>
+        <div id="cardsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+      </div>
+    </section>
+
+    <!-- TAB 3: LISTINO & MOVIMENTI -->
+    <section id="view-catalog" class="hidden space-y-4">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="kpiGrid"></div>
+
+      <!-- Gestione Listino -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="font-bold">Gestione Listino Bar 4 Torri</h2>
+          <button onclick="openProductModal()" class="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs">➕ Nuovo Prodotto</button>
+        </div>
+        <div id="adminProductList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-sm"></div>
+      </div>
+
+      <!-- Movimenti & Export -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h2 class="font-bold">Storico Movimenti</h2>
+          <div class="flex flex-wrap gap-2">
+            <select id="txFilterType" onchange="renderTransactions()" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs">
+              <option value="all">Tutti i tipi</option>
+              <option value="charge">Solo Addebiti</option>
+              <option value="topup">Solo Ricariche</option>
+            </select>
+            <select id="txFilterMethod" onchange="renderTransactions()" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs">
+              <option value="all">NFC + QR</option>
+              <option value="NFC">Solo NFC</option>
+              <option value="QR">Solo QR</option>
+            </select>
+            <button onclick="exportCSV()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium border border-slate-700">📊 CSV</button>
+            <button onclick="openPdfReportModal()" class="px-3 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-400 text-white text-xs font-bold shadow">📕 Report PDF</button>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs sm:text-sm">
+            <thead class="text-slate-400 border-b border-slate-800">
+              <tr>
+                <th class="py-2 pr-3">Data/Ora</th>
+                <th class="py-2 pr-3">Socio</th>
+                <th class="py-2 pr-3">Metodo</th>
+                <th class="py-2 pr-3">Dettaglio</th>
+                <th class="py-2 text-right">Importo</th>
+              </tr>
+            </thead>
+            <tbody id="txTableBody" class="divide-y divide-slate-800/70"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: DATI & BACKUP (100% LOCALE) -->
+    <section id="view-backup" class="hidden space-y-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4">
+        <div>
+          <h2 class="font-bold text-base">Archivio Locale Bar 4 Torri</h2>
+          <p class="text-xs text-slate-400 mt-1">
+            Tutti i saldi, le tessere, il listino e i movimenti di Bar 4 Torri vengono salvati istantaneamente nella memoria interna di questo dispositivo, senza bisogno di server esterno o connessione internet.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+          <div class="bg-slate-950 border border-slate-800 rounded-xl p-3">
+            <div class="text-xs text-slate-400">Ultimo Backup Salvato</div>
+            <div id="lastBackupLabel" class="font-bold text-emerald-400 mt-1">Mai effettuato</div>
+          </div>
+          <div class="bg-slate-950 border border-slate-800 rounded-xl p-3">
+            <div class="text-xs text-slate-400">Tessere in Memoria</div>
+            <div id="statCardsCount" class="font-bold mt-1">0</div>
+          </div>
+          <div class="bg-slate-950 border border-slate-800 rounded-xl p-3">
+            <div class="text-xs text-slate-400">Movimenti Registrati</div>
+            <div id="statTxCount" class="font-bold mt-1">0</div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-2.5 pt-2">
+          <button onclick="openPdfReportModal()" class="px-4 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-bold text-sm shadow">📕 Report PDF Movimenti</button>
+          <button onclick="exportJSON()" class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm">💾 Scarica Backup JSON</button>
+          <button onclick="shareBackupFile()" class="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-sm">📤 Invia Backup (WhatsApp / Drive)</button>
+          <label class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold text-sm border border-slate-700 cursor-pointer">
+            📂 Ripristina da File JSON
+            <input type="file" accept=".json" onchange="importJSON(event)" class="hidden" />
+          </label>
+        </div>
+
+        <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-xs text-amber-200 leading-relaxed">
+          <b>💡 Consiglio per la sicurezza:</b> poiché i dati risiedono solo su questo telefono, a fine serata o a fine settimana premi <b>Invia Backup</b> per salvare una copia su Google Drive o in una chat WhatsApp del direttivo. Se cambi telefono, ti basterà usare <b>Ripristina da File JSON</b>.
+        </div>
+
+        <div class="pt-3 border-t border-slate-800 flex justify-between items-center">
+          <span class="text-xs text-slate-400">Vuoi azzerare i dati di prova?</span>
+          <button onclick="resetAllData()" class="px-3 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-bold">🗑️ Ripristina Dati Demo</button>
+        </div>
+      </div>
+
+      <!-- CARD AGGIORNAMENTO LIVE (SENZA REINSTALLARE APK) -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 class="font-bold text-base">🔄 Aggiornamenti App (Senza Reinstallare)</h2>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Aggiorna grafica, funzioni o listino direttamente da un pacchetto <b>.zip</b> locale oppure dal tuo repository <b>GitHub</b> mantenendo intatti tessere, saldi e movimenti.
+            </p>
+          </div>
+          <span id="liveBundleStatusBadge" class="px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 text-xs font-bold">Versione Integrata APK</span>
+        </div>
+
+        <div id="liveUpdateFeedback" class="hidden p-2.5 rounded-xl text-xs"></div>
+
+        <!-- Opzione 1: Aggiornamento da Pacchetto ZIP Locale -->
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2.5">
+          <div class="font-bold text-sm text-emerald-400">1. Aggiornamento Offline da File ZIP</div>
+          <p class="text-xs text-slate-400">
+            Seleziona un archivio <code>.zip</code> contenente la cartella <code>public/</code> aggiornata (o anche il solo file <code>index.html</code> compresso).
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <label class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-sm cursor-pointer inline-flex items-center gap-1.5 shadow">
+              <span>📦</span><span>Carica Pacchetto Aggiornamento (.zip)</span>
+              <input type="file" accept=".zip,application/zip" onchange="handleLocalZipUpdate(event)" class="hidden" />
+            </label>
+          </div>
+        </div>
+
+        <!-- Opzione 2: Aggiornamento Online con 1 Tap da GitHub -->
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2.5">
+          <div class="font-bold text-sm text-sky-400">2. Aggiornamento Online da GitHub (1 Tap)</div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+            <input id="ghRepoInput" type="text" value="Giudic3/Bar-4T" placeholder="Giudic3/Bar-4T" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 sm:col-span-2" />
+            <input id="ghBranchInput" type="text" value="main" placeholder="Branch (es. main)" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2" />
+          </div>
+          <input id="ghTokenInput" type="password" placeholder="Token GitHub (opzionale — necessario solo se il repository è Privato)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs" />
+          <div class="flex flex-wrap gap-2 pt-1">
+            <button onclick="runGitHubLiveUpdate()" class="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs sm:text-sm shadow">
+              ☁️ Aggiorna ora da GitHub
+            </button>
+            <button id="btnResetBuiltInBundle" onclick="resetLiveBundle()" class="hidden px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-slate-700">
+              ↩️ Torna a Versione Base APK
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: MANUALE D'USO INTEGRATO -->
+    <section id="view-manual" class="hidden space-y-4">
+      <!-- Banner Intestazione & Azioni PDF -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <img src="./icon-192.png" alt="Bar 4 Torri" class="w-12 h-12 rounded-xl border border-amber-400/40 shadow" />
+            <div>
+              <h2 class="font-bold text-lg leading-tight">📖 Manuale d'Uso — Bar 4 Torri POS</h2>
+              <p class="text-xs text-slate-400 mt-0.5">Guida operativa completa al banco • Versione 1.0.0 • Creatore: <span class="text-emerald-400 font-semibold">Loiodice Michele</span></p>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="downloadUserManualPdf()" class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs sm:text-sm flex items-center gap-1.5 shadow">
+              <span>📥</span><span>Scarica Manuale PDF</span>
+            </button>
+            <button onclick="shareUserManualPdf()" class="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs sm:text-sm flex items-center gap-1.5 shadow">
+              <span>📤</span><span>Condividi PDF</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="manualPdfFeedback" class="hidden p-2.5 rounded-xl text-xs"></div>
+
+        <!-- Ricerca rapida nel manuale + Indice capitoli -->
+        <div class="space-y-2.5 pt-2 border-t border-slate-800">
+          <input id="manualSearchInput" oninput="filterManualSections()" type="text" placeholder="🔍 Cerca nel manuale (es. NFC, QR, ricarica, PDF, backup, blocco)..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-emerald-500" />
+          <div class="flex gap-1.5 overflow-x-auto pb-1 text-xs">
+            <button onclick="scrollToManualSec('man-sec-1')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 whitespace-nowrap">1. Panoramica</button>
+            <button onclick="scrollToManualSec('man-sec-2')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 whitespace-nowrap">2. Cassa &amp; Incasso</button>
+            <button onclick="scrollToManualSec('man-sec-3')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 whitespace-nowrap">3. Tessere &amp; QR</button>
+            <button onclick="scrollToManualSec('man-sec-4')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 whitespace-nowrap">4. Listino</button>
+            <button onclick="scrollToManualSec('man-sec-5')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 whitespace-nowrap">5. Report PDF</button>
+            <button onclick="scrollToManualSec('man-sec-6')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 whitespace-nowrap">6. Backup</button>
+            <button onclick="scrollToManualSec('man-sec-7')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 whitespace-nowrap">7. Problemi</button>
+            <button onclick="scrollToManualSec('man-sec-8')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 whitespace-nowrap">8. Release Note</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Capitoli del Manuale -->
+      <div id="manualChaptersContainer" class="space-y-3 text-sm leading-relaxed">
+        <!-- 1. Panoramica -->
+        <article id="man-sec-1" class="manual-card bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2.5">
+          <h3 class="font-bold text-base text-emerald-400">1. Panoramica e Navigazione</h3>
+          <p class="text-slate-300 text-xs sm:text-sm">
+            <b>Bar 4 Torri • POS NFC &amp; QR</b> è l'applicazione di cassa standalone progettata per gestire gli acquisti e le ricariche tramite <b>tessere prepagate NFC</b> e <b>pass digitali QR Code</b>. Funziona al 100% nella memoria interna dello smartphone (<i>Locale su Telefono — Offline</i>), senza bisogno di server o internet durante il servizio al banco e senza schermate di login.
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-2.5"><b class="text-emerald-300">🛒 Cassa Bar:</b> griglia prodotti per categoria, scontrino e incasso rapido NFC/QR.</div>
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-2.5"><b class="text-sky-300">💳 Tessere &amp; Ricariche:</b> saldo soci, ricariche credito, emissione nuove tessere e pass QR.</div>
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-2.5"><b class="text-amber-300">📋 Listino &amp; Movimenti:</b> totali incassi, modifica listino, storico ed export Report PDF/CSV.</div>
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-2.5"><b class="text-purple-300">💾 Dati &amp; Backup:</b> salvataggio archivio JSON locale o invio su WhatsApp / Google Drive.</div>
+          </div>
+        </article>
+
+        <!-- 2. Cassa Bar e Incasso -->
+        <article id="man-sec-2" class="manual-card bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2.5">
+          <h3 class="font-bold text-base text-emerald-400">2. Cassa Bar e Procedura di Incasso</h3>
+          <ol class="list-decimal list-inside space-y-1.5 text-xs sm:text-sm text-slate-300">
+            <li><b>Seleziona i prodotti:</b> filtra per categoria (<i>Caffetteria</i>, <i>Bibite</i>, <i>Alcolici</i>, <i>Snack</i>) e tocca gli articoli per aggiungerli allo scontrino. Usa <b>+</b> e <b>-</b> per variare le quantità o <b>Svuota</b> per azzerare.</li>
+            <li><b>Avvia il pagamento:</b> tocca <b>📡 / 📷 INCASSA CON NFC O QR</b>.</li>
+            <li><b>Leggi la tessera del socio:</b>
+              <ul class="list-disc list-inside pl-4 mt-1 space-y-1 text-slate-400">
+                <li><b>📡 NFC (predefinito):</b> appoggia la tessera fisica al retro dello smartphone per 1 secondo fino al segnale sonoro.</li>
+                <li><b>📷 QR Code:</b> passa alla scheda <i>QR Code</i> nella finestra di scansione e inquadra il QR sul telefono del socio.</li>
+                <li><b>Selezione rapida / Manuale:</b> tocca il nome del socio nella barra rapida oppure digita il codice UID.</li>
+              </ul>
+            </li>
+          </ol>
+          <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs space-y-1">
+            <div><span class="text-emerald-400 font-bold">✅ Pagamento riuscito:</span> doppio tono acuto, addebito automatico, visualizzazione saldo residuo e azzeramento scontrino.</div>
+            <div><span class="text-amber-400 font-bold">⚠️ Credito insufficiente:</span> operazione bloccata senza addebiti; premi <b>Ricarica subito</b> per ricaricare immediatamente la tessera.</div>
+          </div>
+        </article>
+
+        <!-- 3. Tessere, Ricariche e QR Socio -->
+        <article id="man-sec-3" class="manual-card bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2.5">
+          <h3 class="font-bold text-base text-sky-400">3. Tessere Prepagate, Ricariche e QR Socio</h3>
+          <div class="space-y-2 text-xs sm:text-sm text-slate-300">
+            <p><b>➕ Nuova Tessera:</b> nella scheda <i>Tessere &amp; Ricariche</i> premi <b>Nuova Tessera</b>, scrivi Nome e Cognome, poi tocca <b>📡 Leggi NFC</b> e avvicina la tessera nuova al telefono per acquisirne automaticamente l'UID (oppure premi <b>QR</b> per generare una tessera digitale senza supporto fisico).</p>
+            <p><b>⚡ Controllo Saldo e Ricarica:</b> premi <b>📡 / 📷 Scansiona</b> per leggere una tessera o un QR e aprire la scheda del socio. Usa i tagli rapidi (<b>+€5</b>, <b>+€10</b>, <b>+€20</b>, <b>+€50</b>) o un importo libero. In caso di smarrimento puoi disabilitare la tessera con <b>🔒 Blocca Tessera</b>.</p>
+            <p><b>📱 Pass Digitale Brandizzato (Logo 4T 1948):</b> toccando <b>📱 QR</b> su un socio si apre la tessera digitale con il logo <b>4T 1948</b> al centro del QR Code, pronta da scaricare in <b>PNG</b>, inviare su <b>WhatsApp</b> o stampare.</p>
+          </div>
+        </article>
+
+        <!-- 4. Listino Prodotti -->
+        <article id="man-sec-4" class="manual-card bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2">
+          <h3 class="font-bold text-base text-amber-400">4. Gestione Listino Prodotti</h3>
+          <p class="text-xs sm:text-sm text-slate-300">
+            Nella scheda <b>📋 Listino &amp; Movimenti</b> puoi aggiungere nuovi articoli con <b>➕ Nuovo Prodotto</b> (impostando nome, prezzo, icona emoji e categoria), modificare prezzi o nomi esistenti con <b>✏️</b> oppure rimuovere prodotti con <b>🗑️</b>.
+          </p>
+        </article>
+
+        <!-- 5. Report PDF Movimenti -->
+        <article id="man-sec-5" class="manual-card bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2">
+          <h3 class="font-bold text-base text-rose-400">5. Storico Movimenti e Report PDF</h3>
+          <p class="text-xs sm:text-sm text-slate-300">
+            Lo <b>Storico Movimenti</b> registra ogni addebito e ricarica con data, ora, socio, metodo (NFC/QR) e dettaglio articoli. Premendo <b>📕 Report PDF</b> puoi filtrare per ambito (<i>Tutti</i>, <i>Filtrati</i>, <i>Oggi</i>) o intervallo date e scegliere:
+          </p>
+          <ul class="list-disc list-inside text-xs sm:text-sm text-slate-300 space-y-1">
+            <li><b>💾 Salva in Locale:</b> crea il prospetto A4 con riepilogo contabile e tabella movimenti salvandolo nella cartella <code class="text-emerald-300">Download/Bar4Torri</code> del telefono.</li>
+            <li><b>📤 Condividi PDF:</b> apre il menu di condivisione Android per inviare subito il PDF su WhatsApp, Google Drive, email o stampante.</li>
+          </ul>
+        </article>
+
+        <!-- 6. Backup e Sicurezza -->
+        <article id="man-sec-6" class="manual-card bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2">
+          <h3 class="font-bold text-base text-purple-400">6. Dati, Backup e Ripristino</h3>
+          <p class="text-xs sm:text-sm text-slate-300">
+            Poiché l'archivio risiede solo su questo telefono, a fine serata o fine settimana apri <b>💾 Dati &amp; Backup</b> e premi <b>📤 Invia Backup (WhatsApp / Drive)</b> per conservare una copia esterna di sicurezza. In caso di cambio telefono, usa <b>📂 Ripristina da File JSON</b> per recuperare all'istante tutte le tessere, i saldi e lo storico.
+          </p>
+        </article>
+
+        <!-- 7. Risoluzione Problemi -->
+        <article id="man-sec-7" class="manual-card bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2">
+          <h3 class="font-bold text-base text-orange-400">7. Risoluzione Rapida dei Problemi</h3>
+          <div class="space-y-1.5 text-xs text-slate-300">
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-2.5"><b>📡 NFC non legge la tessera:</b> controlla che l'NFC sia attivo nelle Impostazioni Android, togli eventuali cover metalliche e appoggia la tessera sul retro del telefono per 1 secondo senza spostarla.</div>
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-2.5"><b>📷 Fotocamera QR bloccata:</b> verifica che l'app abbia il permesso <i>Fotocamera</i> in <i>Impostazioni Android → App → Bar 4 Torri POS → Autorizzazioni</i>.</div>
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-2.5"><b>🔆 QR su schermo difficile da leggere:</b> fai alzare la luminosità dello smartphone del socio e tieni il telefono a 15-20 cm evitando riflessi diretti.</div>
+          </div>
+        </article>
+
+        <!-- 8. Release Note -->
+        <article id="man-sec-8" class="manual-card bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2.5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="font-bold text-base text-emerald-400">8. Release Note — Versione 1.0.0 (Build v11)</h3>
+            <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 text-xs font-bold">Novembre 2026</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-2.5"><span class="text-slate-400">Creatore:</span> <b class="text-white">Loiodice Michele</b></div>
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-2.5"><span class="text-slate-400">Package Android:</span> <code class="text-emerald-300">com.bar4torri.pos.offline</code></div>
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            <b>Novità incluse:</b> cassa POS offline-first; lettore hardware nativo Android <code>NativeNfcPlugin</code> (ReaderMode) + fallback Web NFC; scanner fotocamera QR <code>jsQR</code>; tessere digitali QR con logo <b>4T 1948</b>; ricariche rapide e blocco tessere; reportistica PDF A4 con salvataggio in <code>Download/Bar4Torri</code> e condivisione nativa; backup JSON; icona dedicata, splash screen con palla da basket rotante e manuale d'uso PDF integrato.
+          </p>
+        </article>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MOBILE STICKY CART BAR -->
+  <div id="mobileCartBar" class="lg:hidden fixed bottom-0 inset-x-0 bg-slate-900 border-t border-slate-800 p-3 flex items-center justify-between gap-3 z-20">
+    <div>
+      <div class="text-xs text-slate-400"><span id="mobCartCount">0</span> articoli</div>
+      <div id="mobCartTotal" class="font-black text-lg text-emerald-400">€ 0,00</div>
+    </div>
+    <button onclick="openScanModal('charge')" id="mobBtnPay" disabled class="px-5 py-3 rounded-xl bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-500 text-slate-950 font-black text-sm">
+      📡 / 📷 INCASSA
+    </button>
+  </div>
+
+  <!-- MODAL: DUAL SCANNER (NFC + QR + SIMULAZIONE) -->
+  <div id="scanModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-4 space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <h3 id="scanModalTitle" class="font-bold text-lg">Scansione Tessera</h3>
+        <button onclick="closeScanModal()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">✕</button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 bg-slate-950 p-1 rounded-xl border border-slate-800">
+        <button id="btnModeNfc" onclick="setScanMode('nfc')" class="py-2 rounded-lg text-sm font-bold bg-emerald-500 text-slate-950">📡 NFC</button>
+        <button id="btnModeQr" onclick="setScanMode('qr')" class="py-2 rounded-lg text-sm font-bold text-slate-400">📷 QR Code</button>
+      </div>
+
+      <!-- NFC Panel -->
+      <div id="panelNfc" class="text-center py-6 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
+        <div class="text-5xl animate-pulse">📡</div>
+        <p id="nfcStatusMsg" class="text-sm font-semibold text-emerald-400">Avvicina la tessera NFC al telefono...</p>
+        <p class="text-xs text-slate-400 px-4">La lettura parte automaticamente su Android (App installata o Chrome HTTPS).</p>
+      </div>
+
+      <!-- QR Panel -->
+      <div id="panelQr" class="hidden space-y-2">
+        <div class="relative bg-black rounded-xl overflow-hidden aspect-square max-h-64 mx-auto border border-slate-700">
+          <video id="qrVideo" class="w-full h-full object-cover" playsinline muted></video>
+          <canvas id="qrCanvas" class="hidden"></canvas>
+          <div class="absolute inset-x-6 h-0.5 bg-emerald-400 shadow-[0_0_12px_#34d399] scan-line"></div>
+        </div>
+        <p id="qrStatusMsg" class="text-xs text-center text-slate-400">Inquadra il QR Code sullo smartphone del socio</p>
+      </div>
+
+      <!-- Manual + Simulation -->
+      <div class="space-y-2 pt-2 border-t border-slate-800">
+        <div class="text-xs font-bold text-slate-400 uppercase">Selezione rapida / Inserimento manuale</div>
+        <div id="simCardsRow" class="flex flex-wrap gap-1.5"></div>
+        <div class="flex gap-2">
+          <input id="manualUidInput" type="text" placeholder="Inserisci UID o codice QR..." class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs" />
+          <button onclick="submitManualUid()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold">OK</button>
+        </div>
+      </div>
+
+      <div id="scanResultBox" class="hidden p-3 rounded-xl text-sm"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: NUOVA TESSERA -->
+  <div id="newCardModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-4 space-y-3">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-lg">➕ Nuova Tessera Socio</h3>
+        <button onclick="closeNewCardModal()" class="w-8 h-8 rounded-lg bg-slate-800">✕</button>
+      </div>
+      <div class="space-y-2.5 text-sm">
+        <div>
+          <label class="text-xs text-slate-400">Nome e Cognome Socio</label>
+          <input id="ncHolder" type="text" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2" placeholder="Es. Marco Neri" />
+        </div>
+        <div>
+          <label class="text-xs text-slate-400">UID Tessera NFC o Codice Solo QR</label>
+          <div class="flex gap-1.5 mt-1">
+            <input id="ncUid" type="text" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 font-mono text-xs" placeholder="04:XX:XX... oppure QR-..." />
+            <button onclick="readNfcForNewCard()" id="btnReadNfcNew" class="px-2.5 py-2 rounded-xl bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/30 whitespace-nowrap">📡 Leggi NFC</button>
+            <button onclick="generateQrUid()" class="px-2.5 py-2 rounded-xl bg-sky-500/20 text-sky-300 text-xs font-bold border border-sky-500/30 whitespace-nowrap">QR</button>
+          </div>
+          <p id="ncNfcHint" class="hidden text-xs text-emerald-400 mt-1">Avvicina ora la tessera NFC nuova al retro del telefono...</p>
+        </div>
+        <div>
+          <label class="text-xs text-slate-400">Credito Iniziale (€)</label>
+          <input id="ncBalance" type="number" step="0.50" value="10" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2" />
+        </div>
+      </div>
+      <button onclick="createNewCard()" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black">Salva Tessera</button>
+    </div>
+  </div>
+
+  <!-- MODAL: SCHEDA SOCIO & RICARICA -->
+  <div id="cardDetailModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-4 space-y-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 id="cdHolder" class="font-bold text-lg"></h3>
+          <p id="cdUid" class="text-xs font-mono text-slate-400"></p>
+        </div>
+        <button onclick="document.getElementById('cardDetailModal').classList.add('hidden')" class="w-8 h-8 rounded-lg bg-slate-800">✕</button>
+      </div>
+      <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-center">
+        <div class="text-xs text-slate-400">Saldo Attuale</div>
+        <div id="cdBalance" class="text-3xl font-black text-emerald-400 mt-1">€ 0,00</div>
+      </div>
+      <div>
+        <div class="text-xs text-slate-400 mb-2">Ricarica Rapida</div>
+        <div class="grid grid-cols-4 gap-2">
+          <button onclick="topupCurrentCard(5)" class="py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold text-sm border border-emerald-500/30">+€5</button>
+          <button onclick="topupCurrentCard(10)" class="py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold text-sm border border-emerald-500/30">+€10</button>
+          <button onclick="topupCurrentCard(20)" class="py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold text-sm border border-emerald-500/30">+€20</button>
+          <button onclick="topupCurrentCard(50)" class="py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold text-sm border border-emerald-500/30">+€50</button>
+        </div>
+        <div class="flex gap-2 mt-2">
+          <input id="customTopupAmt" type="number" step="0.50" placeholder="Altro importo €" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm" />
+          <button onclick="topupCustom()" class="px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold text-sm">Ricarica</button>
+        </div>
+      </div>
+      <div class="flex gap-2 pt-2 border-t border-slate-800">
+        <button id="cdToggleStatusBtn" onclick="toggleCurrentCardStatus()" class="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm font-bold"></button>
+        <button onclick="openQrPassForCurrent()" class="flex-1 py-2.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 text-sm font-bold border border-sky-500/30">📱 QR Socio</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: QR PASS SMARTPHONE -->
+  <div id="qrPassModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-sm w-full p-4 space-y-4">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold">📱 Tessera Digitale Bar 4 Torri</h3>
+        <button onclick="document.getElementById('qrPassModal').classList.add('hidden')" class="w-8 h-8 rounded-lg bg-slate-800">✕</button>
+      </div>
+      <div id="printCardArea" class="bg-white text-slate-900 rounded-2xl p-5 text-center space-y-3 shadow">
+        <div class="text-xs font-black tracking-widest uppercase text-emerald-600">BAR 4 TORRI • TESSERA SOCIO</div>
+        <div id="qrPassName" class="text-xl font-black"></div>
+        <div id="qrPassContainer" class="flex justify-center py-1"></div>
+        <div id="qrPassUid" class="text-xs font-mono text-slate-500"></div>
+      </div>
+      <div class="grid grid-cols-3 gap-2">
+        <button onclick="downloadQrPng()" class="py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs">⬇️ PNG</button>
+        <button onclick="shareQrPass()" class="py-2.5 rounded-xl bg-sky-500 text-slate-950 font-bold text-xs">📤 Condividi</button>
+        <button onclick="window.print()" class="py-2.5 rounded-xl bg-slate-800 text-slate-200 font-bold text-xs">🖨️ Stampa</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: REPORT PDF MOVIMENTI CASSA -->
+  <div id="pdfReportModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-4 space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">📕</span>
+          <div>
+            <h3 class="font-bold text-base">Report PDF Movimenti Cassa</h3>
+            <p class="text-[11px] text-slate-400">Bar 4 Torri • Esporta in locale o condividi</p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('pdfReportModal').classList.add('hidden')" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700">✕</button>
+      </div>
+
+      <div class="space-y-2.5 text-xs">
+        <div>
+          <label class="block text-slate-400 mb-1">Movimenti da includere nel PDF</label>
+          <select id="pdfScopeSelect" onchange="updatePdfPreview()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+            <option value="all">Tutti i movimenti della cassa</option>
+            <option value="filtered">Solo movimenti filtrati nella tabella</option>
+            <option value="today">Solo movimenti di oggi</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-400 mb-1">Dal giorno (opzionale)</label>
+            <input id="pdfDateFrom" type="date" onchange="updatePdfPreview()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs" />
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Al giorno (opzionale)</label>
+            <input id="pdfDateTo" type="date" onchange="updatePdfPreview()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs" />
+          </div>
+        </div>
+      </div>
+
+      <div id="pdfPreviewSummary" class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2 text-xs"></div>
+
+      <div id="pdfActionFeedback" class="hidden p-2.5 rounded-xl text-xs"></div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+        <button onclick="generateAndSavePdf()" class="py-3 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm flex items-center justify-center gap-1.5 shadow">
+          <span>💾</span><span>Salva in Locale</span>
+        </button>
+        <button onclick="generateAndSharePdf()" class="py-3 px-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-sm flex items-center justify-center gap-1.5 shadow">
+          <span>📤</span><span>Condividi PDF</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PRODOTTO -->
+  <div id="productModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-4 space-y-3">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold">Prodotto Listino</h3>
+        <button onclick="document.getElementById('productModal').classList.add('hidden')" class="w-8 h-8 rounded-lg bg-slate-800">✕</button>
+      </div>
+      <input type="hidden" id="pmId" />
+      <div class="space-y-2 text-sm">
+        <input id="pmName" type="text" placeholder="Nome prodotto" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2" />
+        <div class="grid grid-cols-2 gap-2">
+          <input id="pmPrice" type="number" step="0.10" placeholder="Prezzo €" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2" />
+          <input id="pmIcon" type="text" placeholder="Emoji es. ☕" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2" />
+        </div>
+        <input id="pmCategory" type="text" placeholder="Categoria (es. Bibite)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2" />
+      </div>
+      <button onclick="saveProduct()" class="w-full py-3 rounded-xl bg-emerald-500 text-slate-950 font-black">Salva Prodotto</button>
+    </div>
+  </div>
+
+  <script>
+    // ===== PWA REGISTRATION =====
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('btnInstallPwa').classList.remove('hidden');
+    });
+    document.getElementById('btnInstallPwa').addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      document.getElementById('btnInstallPwa').classList.add('hidden');
+    });
+
+    // ===== LOCAL STORAGE STATE =====
+    const STORAGE_KEY = 'bar4torri_pos_standalone_v3';
+    const BACKUP_META_KEY = 'bar4torri_pos_last_backup';
+
+    const DEFAULT_STATE = {
+      products: [
+        { id: 'p1', name: 'Caffè Espresso', price: 1.20, category: 'Caffetteria', icon: '☕' },
+        { id: 'p2', name: 'Cappuccino', price: 1.60, category: 'Caffetteria', icon: '🥛' },
+        { id: 'p3', name: 'Acqua 0.5L', price: 1.00, category: 'Bibite', icon: '💧' },
+        { id: 'p4', name: 'Bibita Lattina', price: 2.50, category: 'Bibite', icon: '🥤' },
+        { id: 'p5', name: 'Birra Piccola', price: 3.00, category: 'Alcolici', icon: '🍺' },
+        { id: 'p6', name: 'Birra Media', price: 4.50, category: 'Alcolici', icon: '🍻' },
+        { id: 'p7', name: 'Calice Vino', price: 3.50, category: 'Alcolici', icon: '🍷' },
+        { id: 'p8', name: 'Spritz', price: 4.50, category: 'Alcolici', icon: '🍹' },
+        { id: 'p9', name: 'Toast / Panino', price: 3.50, category: 'Snack', icon: '🥪' },
+        { id: 'p10', name: 'Patatine', price: 1.50, category: 'Snack', icon: '🍟' },
+        { id: 'p11', name: 'Brioche', price: 1.50, category: 'Caffetteria', icon: '🥐' }
+      ],
+      cards: [
+        { uid: '04:A1:B2:C3:D4:E5:80', holder: 'Mario Rossi', balance: 25.50, active: true, type: 'NFC+QR' },
+        { uid: '04:F6:11:22:33:44:80', holder: 'Laura Bianchi', balance: 8.00, active: true, type: 'NFC+QR' },
+        { uid: 'QR-8842-9910', holder: 'Giuseppe Verdi', balance: 15.00, active: true, type: 'QR' }
+      ],
+      transactions: []
+    };
+
+    let state = null;
+    try {
+      const savedRaw = localStorage.getItem(STORAGE_KEY);
+      const parsed = savedRaw ? JSON.parse(savedRaw) : null;
+      if (parsed && Array.isArray(parsed.products) && Array.isArray(parsed.cards)) {
+        state = parsed;
+      }
+    } catch (e) {
+      console.warn('Reset stato locale corrotto:', e);
+    }
+    if (!state) state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+    if (!Array.isArray(state.transactions)) state.transactions = [];
+    let cart = [];
+    let selectedCategory = 'Tutti';
+    let scanPurpose = 'charge';
+    let scanMode = 'nfc';
+    let activeCardUid = null;
+    let qrStream = null;
+    let qrRaf = null;
+    let nfcCleanup = null;
+    let newCardNfcCleanup = null;
+    let lastNfcScanAt = 0;
+    let currentQrPassCard = null;
+
+    function saveLocal() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function fmtEur(n) {
+      return '€ ' + Number(n || 0).toFixed(2).replace('.', ',');
+    }
+
+    function parseQrUid(raw) {
+      const clean = String(raw || '').trim().toUpperCase();
+      if (clean.startsWith('BAR4TORRI:')) return clean.slice(10);
+      if (clean.startsWith('CIRCOLO:')) return clean.slice(8);
+      return clean;
+    }
+
+    function beep(ok = true) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = ok ? 'sine' : 'sawtooth';
+        osc.frequency.value = ok ? 880 : 220;
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        osc.start();
+        osc.stop(ctx.currentTime + (ok ? 0.14 : 0.3));
+      } catch {}
+    }
+
+    // ===== TABS =====
+    function switchTab(id) {
+      ['pos', 'cards', 'catalog', 'backup', 'manual'].forEach(t => {
+        document.getElementById('view-' + t).classList.toggle('hidden', t !== id);
+        const btn = document.getElementById('tab-' + t);
+        if (t === id) {
+          btn.classList.add('tab-active');
+          btn.classList.remove('bg-slate-800/80', 'text-slate-300');
+        } else {
+          btn.classList.remove('tab-active');
+          btn.classList.add('bg-slate-800/80', 'text-slate-300');
+        }
+      });
+      document.getElementById('mobileCartBar').classList.toggle('hidden', id !== 'pos');
+    }
+
+    // ===== POS & CART =====
+    function renderPOS() {
+      const cats = ['Tutti', ...new Set(state.products.map(p => p.category))];
+      document.getElementById('categoryFilters').innerHTML = cats.map(c => `
+        <button onclick="selectedCategory='${c}'; renderPOS();" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap ${selectedCategory === c ? 'bg-emerald-500 text-slate-950' : 'bg-slate-900 border border-slate-800 text-slate-300'}">${c}</button>
+      `).join('');
+
+      const list = selectedCategory === 'Tutti' ? state.products : state.products.filter(p => p.category === selectedCategory);
+      document.getElementById('productGrid').innerHTML = list.map(p => `
+        <button onclick="addToCart('${p.id}')" class="bg-slate-900 hover:bg-slate-800 active:scale-95 border border-slate-800 rounded-2xl p-3 text-left transition flex flex-col justify-between gap-2">
+          <div class="text-2xl">${p.icon || '🍽️'}</div>
+          <div>
+            <div class="font-bold text-sm leading-snug">${p.name}</div>
+            <div class="text-emerald-400 font-black text-sm mt-0.5">${fmtEur(p.price)}</div>
+          </div>
+        </button>
+      `).join('');
+      renderCart();
+    }
+
+    function addToCart(pid) {
+      const p = state.products.find(x => x.id === pid);
+      if (!p) return;
+      const ex = cart.find(x => x.id === pid);
+      if (ex) ex.qty++;
+      else cart.push({ ...p, qty: 1 });
+      renderCart();
+    }
+
+    function updateQty(pid, delta) {
+      const idx = cart.findIndex(x => x.id === pid);
+      if (idx < 0) return;
+      cart[idx].qty += delta;
+      if (cart[idx].qty <= 0) cart.splice(idx, 1);
+      renderCart();
+    }
+
+    function clearCart() { cart = []; renderCart(); }
+
+    function getCartTotal() {
+      return Number(cart.reduce((s, i) => s + i.price * i.qty, 0).toFixed(2));
+    }
+
+    function renderCart() {
+      const total = getCartTotal();
+      const count = cart.reduce((s, i) => s + i.qty, 0);
+      document.getElementById('cartTotal').textContent = fmtEur(total);
+      document.getElementById('mobCartTotal').textContent = fmtEur(total);
+      document.getElementById('mobCartCount').textContent = count;
+      document.getElementById('btnPay').disabled = total <= 0;
+      document.getElementById('mobBtnPay').disabled = total <= 0;
+
+      const el = document.getElementById('cartItems');
+      if (!cart.length) {
+        el.innerHTML = '<div class="text-center text-slate-500 py-8 text-xs">Tocca i prodotti per aggiungerli allo scontrino</div>';
+        return;
+      }
+      el.innerHTML = cart.map(i => `
+        <div class="flex items-center justify-between gap-2 bg-slate-950/70 rounded-xl p-2 border border-slate-800">
+          <div class="min-w-0">
+            <div class="font-semibold truncate">${i.icon} ${i.name}</div>
+            <div class="text-xs text-slate-400">${fmtEur(i.price)} cad.</div>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button onclick="updateQty('${i.id}', -1)" class="w-7 h-7 rounded-lg bg-slate-800 font-bold">-</button>
+            <span class="w-5 text-center font-bold">${i.qty}</span>
+            <button onclick="updateQty('${i.id}', 1)" class="w-7 h-7 rounded-lg bg-slate-800 font-bold">+</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ===== DUAL SCANNER (NFC + QR) =====
+    function openScanModal(purpose) {
+      scanPurpose = purpose;
+      document.getElementById('scanModalTitle').textContent = purpose === 'charge' ? `Incassa ${fmtEur(getCartTotal())}` : 'Verifica / Ricarica Tessera';
+      document.getElementById('scanResultBox').classList.add('hidden');
+      document.getElementById('manualUidInput').value = '';
+      document.getElementById('simCardsRow').innerHTML = state.cards.map(c => `
+        <button onclick="handleScannedUid('${c.uid}', '${scanMode === 'qr' ? 'QR' : 'NFC'}')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs border border-slate-700">
+          ${c.type === 'QR' ? '📱' : '💳'} ${c.holder} (${fmtEur(c.balance)})
+        </button>
+      `).join('');
+      document.getElementById('scanModal').classList.remove('hidden');
+      setScanMode('nfc');
+    }
+
+    function closeScanModal() {
+      stopQrCamera();
+      stopNfc();
+      document.getElementById('scanModal').classList.add('hidden');
+    }
+
+    function setScanMode(mode) {
+      scanMode = mode;
+      document.getElementById('panelNfc').classList.toggle('hidden', mode !== 'nfc');
+      document.getElementById('panelQr').classList.toggle('hidden', mode !== 'qr');
+      document.getElementById('btnModeNfc').className = mode === 'nfc' ? 'py-2 rounded-lg text-sm font-bold bg-emerald-500 text-slate-950' : 'py-2 rounded-lg text-sm font-bold text-slate-400';
+      document.getElementById('btnModeQr').className = mode === 'qr' ? 'py-2 rounded-lg text-sm font-bold bg-emerald-500 text-slate-950' : 'py-2 rounded-lg text-sm font-bold text-slate-400';
+      if (mode === 'nfc') { stopQrCamera(); startNfc(); }
+      else { stopNfc(); startQrCamera(); }
+    }
+
+    function getNativeNfcPlugin() {
+      return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.CapacitorNfc) || null;
+    }
+
+    function normalizeHexUid(str) {
+      const clean = String(str || '').trim().toUpperCase();
+      if (/^[0-9A-F]{8,}$/.test(clean) && clean.length % 2 === 0) {
+        return clean.match(/.{2}/g).join(':');
+      }
+      return clean;
+    }
+
+    function formatNativeTagUid(tag) {
+      if (!tag) return '';
+      const rawId = tag.id || tag.uid || tag.serialNumber;
+      if (Array.isArray(rawId)) {
+        return rawId
+          .map(b => ((b < 0 ? b + 256 : b) & 0xff).toString(16).padStart(2, '0'))
+          .join(':')
+          .toUpperCase();
+      }
+      if (typeof rawId === 'string') {
+        return normalizeHexUid(rawId);
+      }
+      return '';
+    }
+
+    async function startUnifiedNfc({ onUid, onStatus }) {
+      const nativeNfc = getNativeNfcPlugin();
+
+      // 1. Priorità: Plugin Nativo Capacitor NFC (dentro APK Android)
+      if (nativeNfc) {
+        try {
+          if (nativeNfc.isSupported) {
+            const sup = await nativeNfc.isSupported();
+            if (sup && sup.supported === false) {
+              onStatus('Questo smartphone non dispone di sensore NFC hardware.');
+              return null;
+            }
+          }
+          if (nativeNfc.getStatus) {
+            const st = await nativeNfc.getStatus();
+            if (st && st.status === 'NFC_DISABLED') {
+              onStatus('NFC disattivato! Attivalo nelle Impostazioni del telefono e riprova.');
+              return null;
+            }
+          }
+
+          const handleTagPayload = (ev) => {
+            const now = Date.now();
+            if (now - lastNfcScanAt < 900) return;
+            const uid = formatNativeTagUid(ev && (ev.tag || ev));
+            if (uid) {
+              lastNfcScanAt = now;
+              onUid(uid);
+            }
+          };
+
+          const listeners = [];
+          if (nativeNfc.addListener) {
+            listeners.push(await nativeNfc.addListener('nfcEvent', handleTagPayload));
+            listeners.push(await nativeNfc.addListener('nfcTagScanned', handleTagPayload));
+          }
+          await nativeNfc.startScanning();
+          onStatus('Lettore NFC nativo attivo! Avvicina la tessera al retro del telefono...');
+
+          return async () => {
+            for (const l of listeners) {
+              try { if (l && l.remove) await l.remove(); } catch {}
+            }
+            try { await nativeNfc.stopScanning(); } catch {}
+          };
+        } catch (err) {
+          onStatus('Errore NFC nativo: ' + (err && err.message ? err.message : err));
+          return null;
+        }
+      }
+
+      // 2. Fallback Browser / PWA: Web NFC (Chrome Android HTTPS)
+      if ('NDEFReader' in window) {
+        try {
+          const abortCtrl = new AbortController();
+          const reader = new NDEFReader();
+          await reader.scan({ signal: abortCtrl.signal });
+          onStatus('Lettore Web NFC attivo! Avvicina la tessera...');
+          reader.onreading = (ev) => {
+            const now = Date.now();
+            if (now - lastNfcScanAt < 900) return;
+            const uid = normalizeHexUid(ev.serialNumber || '');
+            if (uid) {
+              lastNfcScanAt = now;
+              onUid(uid);
+            }
+          };
+          return () => {
+            try { abortCtrl.abort(); } catch {}
+          };
+        } catch (err) {
+          onStatus('Web NFC in attesa o permesso negato: ' + err.message);
+          return null;
+        }
+      }
+
+      onStatus('Lettore NFC non disponibile su questo browser (usa APK Android o scheda QR Code).');
+      return null;
+    }
+
+    async function startNfc() {
+      await stopNfc();
+      const msg = document.getElementById('nfcStatusMsg');
+      nfcCleanup = await startUnifiedNfc({
+        onUid: (uid) => handleScannedUid(uid, 'NFC'),
+        onStatus: (text) => { msg.textContent = text; }
+      });
+    }
+
+    async function stopNfc() {
+      if (nfcCleanup) {
+        const fn = nfcCleanup;
+        nfcCleanup = null;
+        await fn();
+      }
+    }
+
+    async function startQrCamera() {
+      const video = document.getElementById('qrVideo');
+      const canvas = document.getElementById('qrCanvas');
+      const status = document.getElementById('qrStatusMsg');
+      try {
+        qrStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        video.srcObject = qrStream;
+        await video.play();
+        status.textContent = 'Fotocamera attiva: inquadra il QR Code del socio';
+        const ctx = canvas.getContext('2d');
+        const tick = () => {
+          if (!qrStream) return;
+          if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            if (window.jsQR) {
+              const code = jsQR(imgData.data, imgData.width, imgData.height);
+              if (code && code.data) {
+                const uid = parseQrUid(code.data);
+                stopQrCamera();
+                handleScannedUid(uid, 'QR');
+                return;
+              }
+            }
+          }
+          qrRaf = requestAnimationFrame(tick);
+        };
+        qrRaf = requestAnimationFrame(tick);
+      } catch (err) {
+        status.textContent = 'Fotocamera non disponibile: ' + err.message;
+      }
+    }
+
+    function stopQrCamera() {
+      if (qrRaf) { cancelAnimationFrame(qrRaf); qrRaf = null; }
+      if (qrStream) { qrStream.getTracks().forEach(t => t.stop()); qrStream = null; }
+    }
+
+    function submitManualUid() {
+      const val = document.getElementById('manualUidInput').value;
+      if (!val.trim()) return;
+      handleScannedUid(parseQrUid(val), scanMode === 'qr' ? 'QR' : 'NFC');
+    }
+
+    function handleScannedUid(uid, method) {
+      const box = document.getElementById('scanResultBox');
+      box.classList.remove('hidden');
+      const card = state.cards.find(c => c.uid === uid);
+      if (!card) {
+        beep(false);
+        box.className = 'p-3 rounded-xl text-sm bg-rose-500/20 border border-rose-500/40 text-rose-200';
+        box.innerHTML = `<b>Tessera sconosciuta:</b> ${uid}`;
+        return;
+      }
+      if (scanPurpose === 'lookup') {
+        beep(true);
+        closeScanModal();
+        openCardDetail(card.uid);
+        return;
+      }
+      if (!card.active) {
+        beep(false);
+        box.className = 'p-3 rounded-xl text-sm bg-rose-500/20 border border-rose-500/40 text-rose-200';
+        box.innerHTML = `<b>Tessera bloccata:</b> ${card.holder}`;
+        return;
+      }
+      const total = getCartTotal();
+      const itemsDesc = cart.map(i => `${i.qty}x ${i.name}`).join(', ');
+      if (card.balance < total) {
+        beep(false);
+        box.className = 'p-3 rounded-xl text-sm bg-amber-500/20 border border-amber-500/40 text-amber-200 space-y-2';
+        box.innerHTML = `<div><b>Credito insufficiente</b> per ${card.holder} (Saldo: ${fmtEur(card.balance)}, Totale: ${fmtEur(total)})</div>
+          <button onclick="closeScanModal(); openCardDetail('${card.uid}');" class="px-3 py-1.5 rounded-lg bg-amber-400 text-slate-950 font-bold text-xs">Ricarica subito</button>`;
+        return;
+      }
+
+      card.balance = Number((card.balance - total).toFixed(2));
+      state.transactions.unshift({
+        id: 'tx_' + Date.now(),
+        type: 'charge',
+        uid: card.uid,
+        holder: card.holder,
+        amount: total,
+        balanceAfter: card.balance,
+        method,
+        items: itemsDesc,
+        timestamp: new Date().toISOString()
+      });
+      saveLocal();
+      beep(true);
+      clearCart();
+      renderAll();
+      box.className = 'p-3 rounded-xl text-sm bg-emerald-500/20 border border-emerald-500/40 text-emerald-200';
+      box.innerHTML = `<b>✅ Pagamento riuscito (${method})!</b><br/>${card.holder} • Addebitati ${fmtEur(total)}<br/>Nuovo saldo: <b>${fmtEur(card.balance)}</b>`;
+      setTimeout(() => closeScanModal(), 1500);
+    }
+
+    // ===== CARDS =====
+    function renderCards() {
+      const q = (document.getElementById('cardSearch').value || '').toLowerCase();
+      const filtered = state.cards.filter(c => c.holder.toLowerCase().includes(q) || c.uid.toLowerCase().includes(q));
+      document.getElementById('cardsList').innerHTML = filtered.map(c => `
+        <div class="bg-slate-950 border ${c.active ? 'border-slate-800' : 'border-rose-500/40'} rounded-xl p-3.5 flex flex-col justify-between gap-3">
+          <div class="flex justify-between items-start gap-2">
+            <div>
+              <div class="font-bold">${c.holder}</div>
+              <div class="text-xs font-mono text-slate-400">${c.uid}</div>
+            </div>
+            <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${c.active ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'}">${c.active ? (c.type || 'NFC+QR') : 'BLOCCATA'}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="text-xl font-black text-emerald-400">${fmtEur(c.balance)}</div>
+            <div class="flex gap-1.5">
+              <button onclick="openQrPass('${c.uid}')" class="px-2.5 py-1.5 rounded-lg bg-sky-500/20 text-sky-300 text-xs font-bold">📱 QR</button>
+              <button onclick="openCardDetail('${c.uid}')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold">Gestisci</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openNewCardModal() {
+      document.getElementById('ncHolder').value = '';
+      document.getElementById('ncUid').value = '';
+      document.getElementById('ncBalance').value = '10';
+      document.getElementById('ncNfcHint').classList.add('hidden');
+      document.getElementById('newCardModal').classList.remove('hidden');
+    }
+
+    async function closeNewCardModal() {
+      if (newCardNfcCleanup) {
+        const fn = newCardNfcCleanup;
+        newCardNfcCleanup = null;
+        await fn();
+      }
+      document.getElementById('newCardModal').classList.add('hidden');
+    }
+
+    async function readNfcForNewCard() {
+      const hint = document.getElementById('ncNfcHint');
+      hint.classList.remove('hidden');
+      if (newCardNfcCleanup) {
+        const fn = newCardNfcCleanup;
+        newCardNfcCleanup = null;
+        await fn();
+      }
+      newCardNfcCleanup = await startUnifiedNfc({
+        onUid: async (uid) => {
+          document.getElementById('ncUid').value = uid;
+          hint.textContent = '✅ Tessera NFC letta: ' + uid;
+          beep(true);
+          if (newCardNfcCleanup) {
+            const fn = newCardNfcCleanup;
+            newCardNfcCleanup = null;
+            await fn();
+          }
+        },
+        onStatus: (text) => { hint.textContent = text; }
+      });
+    }
+
+    function generateQrUid() {
+      const r = () => Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('ncUid').value = `QR-${r()}-${r()}`;
+    }
+
+    function createNewCard() {
+      const holder = document.getElementById('ncHolder').value.trim();
+      const uid = document.getElementById('ncUid').value.trim().toUpperCase();
+      const balance = Number(document.getElementById('ncBalance').value || 0);
+      if (!holder || !uid) return alert('Inserisci nome socio e codice UID/QR');
+      if (state.cards.some(c => c.uid === uid)) return alert('Questa tessera è già registrata');
+      const type = uid.startsWith('QR-') ? 'QR' : 'NFC+QR';
+      state.cards.push({ uid, holder, balance, active: true, type });
+      if (balance > 0) {
+        state.transactions.unshift({
+          id: 'tx_' + Date.now(), type: 'topup', uid, holder, amount: balance,
+          balanceAfter: balance, method: type === 'QR' ? 'QR' : 'NFC', items: 'Credito iniziale', timestamp: new Date().toISOString()
+        });
+      }
+      saveLocal();
+      renderAll();
+      closeNewCardModal();
+    }
+
+    function openCardDetail(uid) {
+      const card = state.cards.find(c => c.uid === uid);
+      if (!card) return;
+      activeCardUid = uid;
+      document.getElementById('cdHolder').textContent = card.holder;
+      document.getElementById('cdUid').textContent = card.uid;
+      document.getElementById('cdBalance').textContent = fmtEur(card.balance);
+      document.getElementById('cdToggleStatusBtn').textContent = card.active ? '🔒 Blocca Tessera' : '🔓 Sblocca Tessera';
+      document.getElementById('customTopupAmt').value = '';
+      document.getElementById('cardDetailModal').classList.remove('hidden');
+    }
+
+    function topupCurrentCard(amount) {
+      const card = state.cards.find(c => c.uid === activeCardUid);
+      if (!card || amount <= 0) return;
+      card.balance = Number((card.balance + amount).toFixed(2));
+      state.transactions.unshift({
+        id: 'tx_' + Date.now(), type: 'topup', uid: card.uid, holder: card.holder, amount,
+        balanceAfter: card.balance, method: card.type === 'QR' ? 'QR' : 'NFC', items: 'Ricarica cassa', timestamp: new Date().toISOString()
+      });
+      saveLocal();
+      beep(true);
+      openCardDetail(card.uid);
+      renderAll();
+    }
+
+    function topupCustom() {
+      const val = Number(document.getElementById('customTopupAmt').value);
+      if (val > 0) topupCurrentCard(val);
+    }
+
+    function toggleCurrentCardStatus() {
+      const card = state.cards.find(c => c.uid === activeCardUid);
+      if (!card) return;
+      card.active = !card.active;
+      saveLocal();
+      openCardDetail(card.uid);
+      renderAll();
+    }
+
+    // ===== QR PASS =====
+    function openQrPassForCurrent() {
+      document.getElementById('cardDetailModal').classList.add('hidden');
+      openQrPass(activeCardUid);
+    }
+
+    const LOGO_4T_DATA_URL = "data:image/png;base64,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";
+    const logo4tImg = new Image();
+    logo4tImg.src = LOGO_4T_DATA_URL;
+
+    function stampLogoOnQrCanvas(canvas) {
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const size = Math.round(canvas.width * 0.24);
+      const x = Math.round((canvas.width - size) / 2);
+      const y = Math.round((canvas.height - size) / 2);
+      const drawBadge = () => {
+        ctx.save();
+        ctx.fillStyle = '#ffffff';
+        const r = Math.round(size * 0.16);
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + size - r, y);
+        ctx.quadraticCurveTo(x + size, y, x + size, y + r);
+        ctx.lineTo(x + size, y + size - r);
+        ctx.quadraticCurveTo(x + size, y + size, x + size - r, y + size);
+        ctx.lineTo(x + r, y + size);
+        ctx.quadraticCurveTo(x, y + size, x, y + size - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+        ctx.fill();
+        ctx.drawImage(logo4tImg, x, y, size, size);
+        ctx.restore();
+      };
+      if (logo4tImg.complete && logo4tImg.naturalWidth > 0) {
+        drawBadge();
+      } else {
+        logo4tImg.onload = drawBadge;
+      }
+    }
+
+    function openQrPass(uid) {
+      const card = state.cards.find(c => c.uid === uid);
+      if (!card) return;
+      currentQrPassCard = card;
+      document.getElementById('qrPassName').textContent = card.holder;
+      document.getElementById('qrPassUid').textContent = card.uid;
+      const box = document.getElementById('qrPassContainer');
+      box.innerHTML = '';
+      const qrPayload = 'BAR4TORRI:' + card.uid;
+      if (typeof window.QRCode === 'function') {
+        new QRCode(box, { text: qrPayload, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.H });
+      } else {
+        const fbCanvas = document.createElement('canvas');
+        fbCanvas.width = 220; fbCanvas.height = 220;
+        const fctx = fbCanvas.getContext('2d');
+        fctx.fillStyle = '#ffffff'; fctx.fillRect(0, 0, 220, 220);
+        fctx.fillStyle = '#0f172a';
+        const cells = 29, pad = 12, mod = (220 - pad * 2) / cells;
+        const drawFinder = (gx, gy) => {
+          fctx.fillRect(pad + gx * mod, pad + gy * mod, 7 * mod, 7 * mod);
+          fctx.fillStyle = '#ffffff';
+          fctx.fillRect(pad + (gx + 1) * mod, pad + (gy + 1) * mod, 5 * mod, 5 * mod);
+          fctx.fillStyle = '#0f172a';
+          fctx.fillRect(pad + (gx + 2) * mod, pad + (gy + 2) * mod, 3 * mod, 3 * mod);
+        };
+        drawFinder(0, 0); drawFinder(cells - 7, 0); drawFinder(0, cells - 7);
+        let h = 2166136261;
+        for (let i = 0; i < qrPayload.length; i++) { h ^= qrPayload.charCodeAt(i); h = Math.imul(h, 16777619); }
+        for (let r = 0; r < cells; r++) {
+          for (let c = 0; c < cells; c++) {
+            const inFinder = (r < 8 && c < 8) || (r < 8 && c >= cells - 8) || (r >= cells - 8 && c < 8);
+            if (!inFinder) {
+              h = (Math.imul(h ^ (r * 31 + c), 1103515245) + 12345) >>> 0;
+              if ((h & 1) === 1) fctx.fillRect(pad + c * mod, pad + r * mod, Math.ceil(mod), Math.ceil(mod));
+            }
+          }
+        }
+        box.appendChild(fbCanvas);
+      }
+      const qrCanvas = box.querySelector('canvas');
+      const qrImg = box.querySelector('img');
+      if (qrCanvas) {
+        stampLogoOnQrCanvas(qrCanvas);
+        qrCanvas.style.display = 'block';
+        if (qrImg) qrImg.style.display = 'none';
+      }
+      document.getElementById('qrPassModal').classList.remove('hidden');
+    }
+
+    function buildQrCardCanvas() {
+      const srcCanvas = document.querySelector('#qrPassContainer canvas');
+      const c = document.createElement('canvas');
+      c.width = 440; c.height = 560;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height);
+      ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, c.width, 90);
+      ctx.fillStyle = '#34d399'; ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('BAR 4 TORRI • TESSERA SOCIO', 220, 54);
+      ctx.fillStyle = '#0f172a'; ctx.font = 'bold 28px sans-serif';
+      ctx.fillText(currentQrPassCard.holder, 220, 145);
+      if (srcCanvas) ctx.drawImage(srcCanvas, 100, 180, 240, 240);
+      ctx.fillStyle = '#64748b'; ctx.font = '18px monospace';
+      ctx.fillText(currentQrPassCard.uid, 220, 470);
+      ctx.fillStyle = '#94a3b8'; ctx.font = '14px sans-serif';
+      ctx.fillText('Mostra questo QR alla cassa del Bar 4 Torri', 220, 515);
+      return c;
+    }
+
+    function downloadQrPng() {
+      const c = buildQrCardCanvas();
+      const a = document.createElement('a');
+      a.download = `tessera_bar4torri_${currentQrPassCard.holder.replace(/\s+/g, '_')}.png`;
+      a.href = c.toDataURL('image/png');
+      a.click();
+    }
+
+    async function shareQrPass() {
+      const c = buildQrCardCanvas();
+      c.toBlob(async (blob) => {
+        const file = new File([blob], 'tessera_bar4torri.png', { type: 'image/png' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ title: 'Tessera Bar 4 Torri', text: `Tessera di ${currentQrPassCard.holder} - Bar 4 Torri`, files: [file] });
+        } else {
+          downloadQrPng();
+        }
+      });
+    }
+
+    // ===== CATALOG & TRANSACTIONS =====
+    function renderCatalogAndTx() {
+      const totalCredit = state.cards.reduce((s, c) => s + Number(c.balance || 0), 0);
+      const totalSales = state.transactions.filter(t => t.type === 'charge').reduce((s, t) => s + t.amount, 0);
+      const totalTopups = state.transactions.filter(t => t.type === 'topup').reduce((s, t) => s + t.amount, 0);
+      document.getElementById('kpiGrid').innerHTML = `
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3"><div class="text-xs text-slate-400">Vendite Totali</div><div class="text-xl font-black text-emerald-400">${fmtEur(totalSales)}</div></div>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3"><div class="text-xs text-slate-400">Ricariche Incassate</div><div class="text-xl font-black text-sky-400">${fmtEur(totalTopups)}</div></div>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3"><div class="text-xs text-slate-400">Credito Residuo Soci</div><div class="text-xl font-black text-amber-400">${fmtEur(totalCredit)}</div></div>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3"><div class="text-xs text-slate-400">Tessere Attive</div><div class="text-xl font-black">${state.cards.filter(c => c.active).length} / ${state.cards.length}</div></div>
+      `;
+
+      document.getElementById('adminProductList').innerHTML = state.products.map(p => `
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-2.5 flex items-center justify-between gap-2">
+          <div><span class="mr-1">${p.icon}</span><b>${p.name}</b> <span class="text-emerald-400 font-bold ml-1">${fmtEur(p.price)}</span></div>
+          <div class="flex gap-1">
+            <button onclick="openProductModal('${p.id}')" class="px-2 py-1 rounded bg-slate-800 text-xs">✏️</button>
+            <button onclick="deleteProduct('${p.id}')" class="px-2 py-1 rounded bg-rose-500/20 text-rose-300 text-xs">🗑️</button>
+          </div>
+        </div>
+      `).join('');
+
+      renderTransactions();
+    }
+
+    function renderTransactions() {
+      const fType = document.getElementById('txFilterType').value;
+      const fMeth = document.getElementById('txFilterMethod').value;
+      const list = state.transactions.filter(t => (fType === 'all' || t.type === fType) && (fMeth === 'all' || (t.method || 'NFC') === fMeth));
+      const tb = document.getElementById('txTableBody');
+      if (!list.length) {
+        tb.innerHTML = '<tr><td colspan="5" class="py-6 text-center text-slate-500">Nessun movimento registrato</td></tr>';
+        return;
+      }
+      tb.innerHTML = list.map(t => `
+        <tr>
+          <td class="py-2 pr-3 text-slate-400 whitespace-nowrap">${new Date(t.timestamp).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })}</td>
+          <td class="py-2 pr-3 font-medium">${t.holder}</td>
+          <td class="py-2 pr-3"><span class="px-1.5 py-0.5 rounded bg-slate-800 text-[11px]">${t.method === 'QR' ? '📷 QR' : '📡 NFC'}</span></td>
+          <td class="py-2 pr-3 text-slate-300">${t.items || '-'}</td>
+          <td class="py-2 text-right font-bold whitespace-nowrap ${t.type === 'topup' ? 'text-sky-400' : 'text-emerald-400'}">${t.type === 'topup' ? '+' : '-'}${fmtEur(t.amount)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function openProductModal(id = '') {
+      const p = state.products.find(x => x.id === id);
+      document.getElementById('pmId').value = p ? p.id : '';
+      document.getElementById('pmName').value = p ? p.name : '';
+      document.getElementById('pmPrice').value = p ? p.price : '';
+      document.getElementById('pmIcon').value = p ? p.icon : '🍽️';
+      document.getElementById('pmCategory').value = p ? p.category : 'Bibite';
+      document.getElementById('productModal').classList.remove('hidden');
+    }
+
+    function saveProduct() {
+      const item = {
+        id: document.getElementById('pmId').value || 'p_' + Date.now(),
+        name: document.getElementById('pmName').value.trim(),
+        price: Number(document.getElementById('pmPrice').value),
+        icon: document.getElementById('pmIcon').value.trim() || '🍽️',
+        category: document.getElementById('pmCategory').value.trim() || 'Altro'
+      };
+      if (!item.name || isNaN(item.price)) return alert('Compila nome e prezzo');
+      const idx = state.products.findIndex(x => x.id === item.id);
+      if (idx >= 0) state.products[idx] = item; else state.products.push(item);
+      saveLocal(); renderAll();
+      document.getElementById('productModal').classList.add('hidden');
+    }
+
+    function deleteProduct(id) {
+      if (!confirm('Eliminare questo prodotto?')) return;
+      state.products = state.products.filter(x => x.id !== id);
+      saveLocal(); renderAll();
+    }
+
+    // ===== BACKUP & EXPORT =====
+    function renderBackupStats() {
+      const last = localStorage.getItem(BACKUP_META_KEY);
+      document.getElementById('lastBackupLabel').textContent = last ? new Date(last).toLocaleString('it-IT') : 'Mai effettuato';
+      document.getElementById('statCardsCount').textContent = state.cards.length;
+      document.getElementById('statTxCount').textContent = state.transactions.length;
+    }
+
+    function getNativeFilePlugin() {
+      return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.NativeFile) || null;
+    }
+
+    function blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    async function saveFileCrossPlatform(blob, filename, mimeType) {
+      const nativeFile = getNativeFilePlugin();
+      if (nativeFile && nativeFile.saveFile) {
+        const base64 = await blobToBase64(blob);
+        const res = await nativeFile.saveFile({ filename, base64, mimeType });
+        return (res && res.path) ? res.path : ('Download/Bar4Torri/' + filename);
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      return filename;
+    }
+
+    async function shareFileCrossPlatform(blob, filename, mimeType, title, text) {
+      const nativeFile = getNativeFilePlugin();
+      if (nativeFile && nativeFile.shareFile) {
+        const base64 = await blobToBase64(blob);
+        await nativeFile.shareFile({ filename, base64, mimeType, title, text });
+        return true;
+      }
+      const file = new File([blob], filename, { type: mimeType });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ title, text, files: [file] });
+        return true;
+      }
+      await saveFileCrossPlatform(blob, filename, mimeType);
+      return false;
+    }
+
+    function getReportTransactions() {
+      const scope = document.getElementById('pdfScopeSelect') ? document.getElementById('pdfScopeSelect').value : 'all';
+      const dFrom = document.getElementById('pdfDateFrom') ? document.getElementById('pdfDateFrom').value : '';
+      const dTo = document.getElementById('pdfDateTo') ? document.getElementById('pdfDateTo').value : '';
+
+      let list = [...state.transactions];
+      let label = 'Tutti i movimenti registrati';
+
+      if (scope === 'filtered') {
+        const fType = document.getElementById('txFilterType').value;
+        const fMeth = document.getElementById('txFilterMethod').value;
+        list = list.filter(t => (fType === 'all' || t.type === fType) && (fMeth === 'all' || (t.method || 'NFC') === fMeth));
+        label = `Movimenti filtrati (Tipo: ${fType === 'all' ? 'Tutti' : fType === 'charge' ? 'Addebiti' : 'Ricariche'}, Metodo: ${fMeth})`;
+      } else if (scope === 'today') {
+        const todayStr = new Date().toISOString().slice(0, 10);
+        list = list.filter(t => String(t.timestamp || '').slice(0, 10) === todayStr);
+        label = `Movimenti di oggi (${new Date().toLocaleDateString('it-IT')})`;
+      }
+
+      if (dFrom) {
+        list = list.filter(t => String(t.timestamp || '').slice(0, 10) >= dFrom);
+        label += ` • Dal ${dFrom}`;
+      }
+      if (dTo) {
+        list = list.filter(t => String(t.timestamp || '').slice(0, 10) <= dTo);
+        label += ` • Al ${dTo}`;
+      }
+
+      return { list, label };
+    }
+
+    function openPdfReportModal() {
+      document.getElementById('pdfScopeSelect').value = 'all';
+      document.getElementById('pdfDateFrom').value = '';
+      document.getElementById('pdfDateTo').value = '';
+      const fb = document.getElementById('pdfActionFeedback');
+      fb.classList.add('hidden');
+      updatePdfPreview();
+      document.getElementById('pdfReportModal').classList.remove('hidden');
+    }
+
+    function updatePdfPreview() {
+      const { list } = getReportTransactions();
+      const sales = list.filter(t => t.type === 'charge').reduce((s, t) => s + Number(t.amount || 0), 0);
+      const topups = list.filter(t => t.type === 'topup').reduce((s, t) => s + Number(t.amount || 0), 0);
+      const residual = state.cards.reduce((s, c) => s + Number(c.balance || 0), 0);
+      document.getElementById('pdfPreviewSummary').innerHTML = `
+        <div class="flex justify-between"><span class="text-slate-400">Movimenti inclusi:</span><b class="text-white">${list.length}</b></div>
+        <div class="flex justify-between"><span class="text-slate-400">Totale Vendite Bar:</span><b class="text-emerald-400">${fmtEur(sales)}</b></div>
+        <div class="flex justify-between"><span class="text-slate-400">Totale Ricariche:</span><b class="text-sky-400">${fmtEur(topups)}</b></div>
+        <div class="flex justify-between border-t border-slate-800 pt-1.5"><span class="text-slate-400">Credito Residuo Tessere:</span><b class="text-amber-400">${fmtEur(residual)}</b></div>
+      `;
+    }
+
+    // Generatore PDF 1.4 puro integrato (fallback 100% offline se jsPDF non e' in cache)
+    function buildFallbackRawPdfBlob(list, filterLabel) {
+      const sanitize = (s) => String(s || '')
+        .replace(/€/g, 'EUR ')
+        .replace(/[àáâãä]/g, 'a').replace(/[èéêë]/g, 'e').replace(/[ìíîï]/g, 'i')
+        .replace(/[òóôõö]/g, 'o').replace(/[ùúûü]/g, 'u')
+        .replace(/[^ -~]/g, ' ')
+        .replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+
+      const sales = list.filter(t => t.type === 'charge').reduce((s, t) => s + Number(t.amount || 0), 0);
+      const topups = list.filter(t => t.type === 'topup').reduce((s, t) => s + Number(t.amount || 0), 0);
+      const residual = state.cards.reduce((s, c) => s + Number(c.balance || 0), 0);
+
+      const lines = [
+        'BAR 4 TORRI - REPORT MOVIMENTI CASSA',
+        'Generato il: ' + new Date().toLocaleString('it-IT'),
+        'Filtro: ' + filterLabel,
+        '--------------------------------------------------------------------------------',
+        `Movimenti: ${list.length} | Vendite: EUR ${sales.toFixed(2)} | Ricariche: EUR ${topups.toFixed(2)} | Residuo Soci: EUR ${residual.toFixed(2)}`,
+        '--------------------------------------------------------------------------------',
+        'DATA/ORA          | SOCIO               | MET | TIPO     | IMPORTO   | DETTAGLIO'
+      ];
+
+      if (!list.length) {
+        lines.push('Nessun movimento registrato per il periodo selezionato.');
+      } else {
+        list.forEach(t => {
+          const dt = new Date(t.timestamp).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' }).padEnd(17, ' ');
+          const holder = String(t.holder || '').slice(0, 19).padEnd(19, ' ');
+          const met = String(t.method || 'NFC').padEnd(3, ' ');
+          const typ = (t.type === 'topup' ? 'Ricarica' : 'Addebito').padEnd(8, ' ');
+          const amt = ((t.type === 'topup' ? '+' : '-') + t.amount.toFixed(2)).padStart(9, ' ');
+          const det = String(t.items || '-').slice(0, 28);
+          lines.push(`${dt} | ${holder} | ${met} | ${typ} | ${amt} | ${det}`);
+        });
+      }
+
+      const perPage = 44;
+      const pages = [];
+      for (let i = 0; i < lines.length; i += perPage) {
+        pages.push(lines.slice(i, i + perPage));
+      }
+
+      const objects = [];
+      const addObj = (content) => { objects.push(content); return objects.length; };
+      const catalogId = addObj('');
+      const pagesId = addObj('');
+      const fontId = addObj('<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>');
+      const pageIds = [];
+
+      pages.forEach((pLines, pIdx) => {
+        let stream = 'BT /F1 8.5 Tf 36 800 Td 15 TL\n';
+        pLines.forEach((ln, idx) => {
+          stream += (idx === 0 ? `(${sanitize(ln)}) Tj\n` : `T* (${sanitize(ln)}) Tj\n`);
+        });
+        stream += `T* (--- Pagina ${pIdx + 1} di ${pages.length} ---) Tj\nET`;
+        const contentId = addObj(`<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`);
+        const pageId = addObj(`<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 ${fontId} 0 R >> >> /Contents ${contentId} 0 R >>`);
+        pageIds.push(pageId);
+      });
+
+      objects[pagesId - 1] = `<< /Type /Pages /Kids [${pageIds.map(id => id + ' 0 R').join(' ')}] /Count ${pageIds.length} >>`;
+      objects[catalogId - 1] = `<< /Type /Catalog /Pages ${pagesId} 0 R >>`;
+
+      let pdf = '%PDF-1.4\n';
+      const offsets = [0];
+      objects.forEach((obj, i) => {
+        offsets.push(pdf.length);
+        pdf += `${i + 1} 0 obj\n${obj}\nendobj\n`;
+      });
+      const xrefStart = pdf.length;
+      pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+      for (let i = 1; i <= objects.length; i++) {
+        pdf += String(offsets[i]).padStart(10, '0') + ' 00000 n \n';
+      }
+      pdf += `trailer\n<< /Size ${objects.length + 1} /Root ${catalogId} 0 R >>\nstartxref\n${xrefStart}\n%%EOF`;
+      return new Blob([pdf], { type: 'application/pdf' });
+    }
+
+    function buildMovimentiPdfBlob() {
+      const { list, label } = getReportTransactions();
+
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        return buildFallbackRawPdfBlob(list, label);
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
+
+      // Header Banner
+      doc.setFillColor(15, 23, 42);
+      doc.rect(0, 0, pageW, 30, 'F');
+      doc.setFillColor(16, 185, 129);
+      doc.rect(0, 30, pageW, 1.5, 'F');
+
+      try {
+        if (logo4tImg && logo4tImg.complete && logo4tImg.naturalWidth > 0) {
+          doc.addImage(logo4tImg, 'PNG', 12, 5, 20, 20);
+        }
+      } catch {}
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(15);
+      doc.text('BAR 4 TORRI — REPORT MOVIMENTI CASSA', 37, 13);
+
+      doc.setTextColor(148, 163, 184);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.text(`Generato il: ${new Date().toLocaleString('it-IT')}  •  ${label}`, 37, 20);
+      doc.text('Gestionale POS Tessere Prepagate NFC & QR Code', 37, 25);
+
+      // KPI Summary Boxes
+      const charges = list.filter(t => t.type === 'charge');
+      const topups = list.filter(t => t.type === 'topup');
+      const totalSales = charges.reduce((s, t) => s + Number(t.amount || 0), 0);
+      const totalTopups = topups.reduce((s, t) => s + Number(t.amount || 0), 0);
+      const netFlow = Number((totalTopups - totalSales).toFixed(2));
+      const totalCredit = state.cards.reduce((s, c) => s + Number(c.balance || 0), 0);
+
+      const kpis = [
+        { title: 'VENDITE BAR', val: fmtEur(totalSales), sub: `${charges.length} addebiti`, rgb: [16, 185, 129] },
+        { title: 'RICARICHE', val: fmtEur(totalTopups), sub: `${topups.length} ricariche`, rgb: [14, 165, 233] },
+        { title: 'SALDO PERIODO', val: (netFlow >= 0 ? '+' : '') + fmtEur(netFlow), sub: `${list.length} movimenti`, rgb: [99, 102, 241] },
+        { title: 'RESIDUO SOCI', val: fmtEur(totalCredit), sub: `${state.cards.filter(c => c.active).length} tessere attive`, rgb: [245, 158, 11] }
+      ];
+
+      const boxW = (pageW - 24 - 9) / 4;
+      kpis.forEach((k, idx) => {
+        const bx = 12 + idx * (boxW + 3);
+        const by = 36;
+        doc.setFillColor(248, 250, 252);
+        doc.setDrawColor(226, 232, 240);
+        doc.roundedRect(bx, by, boxW, 18, 2, 2, 'FD');
+        doc.setFillColor(k.rgb[0], k.rgb[1], k.rgb[2]);
+        doc.rect(bx, by, 1.5, 18, 'F');
+
+        doc.setTextColor(100, 116, 139);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7);
+        doc.text(k.title, bx + 4, by + 5.5);
+
+        doc.setTextColor(15, 23, 42);
+        doc.setFontSize(10.5);
+        doc.text(k.val, bx + 4, by + 11.5);
+
+        doc.setTextColor(100, 116, 139);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7);
+        doc.text(k.sub, bx + 4, by + 15.8);
+      });
+
+      const rows = list.map(t => [
+        new Date(t.timestamp).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' }),
+        t.holder || '-',
+        t.uid || '-',
+        t.method || 'NFC',
+        t.type === 'topup' ? 'Ricarica' : 'Addebito',
+        t.items || '-',
+        (t.type === 'topup' ? '+' : '-') + fmtEur(t.amount),
+        t.balanceAfter != null ? fmtEur(t.balanceAfter) : '-'
+      ]);
+
+      if (!rows.length) {
+        rows.push(['-', 'Nessun movimento nel periodo selezionato', '-', '-', '-', '-', '€ 0,00', '-']);
+      }
+
+      if (typeof doc.autoTable === 'function') {
+        doc.autoTable({
+          startY: 59,
+          margin: { left: 12, right: 12, bottom: 16 },
+          head: [['Data/Ora', 'Socio', 'Tessera', 'Met.', 'Tipo', 'Dettaglio', 'Importo', 'Saldo']],
+          body: rows,
+          styles: { fontSize: 7.5, cellPadding: 2.2, textColor: [30, 41, 59], lineColor: [226, 232, 240], lineWidth: 0.1 },
+          headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7.5 },
+          alternateRowStyles: { fillColor: [248, 250, 252] },
+          columnStyles: {
+            0: { cellWidth: 24 },
+            1: { cellWidth: 28, fontStyle: 'bold' },
+            2: { cellWidth: 26, font: 'courier', fontSize: 6.5 },
+            3: { cellWidth: 11, halign: 'center' },
+            4: { cellWidth: 16, halign: 'center' },
+            5: { cellWidth: 'auto' },
+            6: { cellWidth: 20, halign: 'right', fontStyle: 'bold' },
+            7: { cellWidth: 19, halign: 'right' }
+          },
+          didParseCell: (data) => {
+            if (data.section === 'body' && data.column.index === 6) {
+              const txt = String(data.cell.raw || '');
+              data.cell.styles.textColor = txt.startsWith('+') ? [2, 132, 199] : [5, 150, 105];
+            }
+          },
+          didDrawPage: () => {
+            const pageCount = doc.internal.getNumberOfPages();
+            const curr = doc.internal.getCurrentPageInfo().pageNumber;
+            doc.setFontSize(7.5);
+            doc.setTextColor(148, 163, 184);
+            doc.text(`Bar 4 Torri • Report Cassa NFC & QR`, 12, pageH - 7);
+            doc.text(`Pagina ${curr} di ${pageCount}`, pageW - 12, pageH - 7, { align: 'right' });
+          }
+        });
+      }
+
+      return doc.output('blob');
+    }
+
+    function showPdfFeedback(ok, message) {
+      const fb = document.getElementById('pdfActionFeedback');
+      fb.classList.remove('hidden');
+      fb.className = ok
+        ? 'p-2.5 rounded-xl text-xs bg-emerald-500/20 border border-emerald-500/40 text-emerald-200'
+        : 'p-2.5 rounded-xl text-xs bg-rose-500/20 border border-rose-500/40 text-rose-200';
+      fb.innerHTML = message;
+    }
+
+    async function generateAndSavePdf() {
+      try {
+        const blob = buildMovimentiPdfBlob();
+        const filename = `report_movimenti_bar4torri_${new Date().toISOString().slice(0, 10)}.pdf`;
+        const savedPath = await saveFileCrossPlatform(blob, filename, 'application/pdf');
+        beep(true);
+        showPdfFeedback(true, `<b>✅ Report PDF salvato!</b><br/>Posizione: <span class="font-mono">${savedPath}</span>`);
+      } catch (err) {
+        beep(false);
+        showPdfFeedback(false, `<b>Errore salvataggio PDF:</b> ${err.message || err}`);
+      }
+    }
+
+    async function generateAndSharePdf() {
+      try {
+        const blob = buildMovimentiPdfBlob();
+        const filename = `report_movimenti_bar4torri_${new Date().toISOString().slice(0, 10)}.pdf`;
+        const shared = await shareFileCrossPlatform(
+          blob,
+          filename,
+          'application/pdf',
+          'Report Movimenti Bar 4 Torri',
+          `Report movimenti cassa Bar 4 Torri del ${new Date().toLocaleDateString('it-IT')}`
+        );
+        beep(true);
+        if (shared) {
+          showPdfFeedback(true, '<b>✅ Finestra di condivisione aperta!</b> Scegli WhatsApp, Drive, Email o stampa.');
+        } else {
+          showPdfFeedback(true, `<b>✅ PDF scaricato in locale:</b> ${filename}`);
+        }
+      } catch (err) {
+        if (err && err.name === 'AbortError') return;
+        beep(false);
+        showPdfFeedback(false, `<b>Errore condivisione PDF:</b> ${err.message || err}`);
+      }
+    }
+
+    function exportCSV() {
+      const rows = [['Data', 'Tipo', 'Socio', 'UID', 'Metodo', 'Dettaglio', 'Importo', 'SaldoDopo']];
+      state.transactions.forEach(t => rows.push([t.timestamp, t.type, t.holder, t.uid, t.method || 'NFC', `"${(t.items || '').replace(/"/g, '""')}"`, t.amount, t.balanceAfter]));
+      const blob = new Blob([rows.map(r => r.join(';')).join('\n')], { type: 'text/csv;charset=utf-8;' });
+      saveFileCrossPlatform(blob, 'movimenti_bar4torri.csv', 'text/csv');
+    }
+
+    function markBackupDone() {
+      localStorage.setItem(BACKUP_META_KEY, new Date().toISOString());
+      renderBackupStats();
+    }
+
+    async function exportJSON() {
+      try {
+        const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+        const filename = `backup_bar4torri_${new Date().toISOString().slice(0, 10)}.json`;
+        const savedPath = await saveFileCrossPlatform(blob, filename, 'application/json');
+        markBackupDone();
+        if (getNativeFilePlugin()) alert('Backup salvato in: ' + savedPath);
+      } catch (err) {
+        alert('Errore salvataggio backup: ' + err.message);
+      }
+    }
+
+    async function shareBackupFile() {
+      try {
+        const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+        const filename = `backup_bar4torri_${new Date().toISOString().slice(0, 10)}.json`;
+        await shareFileCrossPlatform(blob, filename, 'application/json', 'Backup Bar 4 Torri POS', 'Copia di sicurezza dati cassa Bar 4 Torri');
+        markBackupDone();
+      } catch (err) {
+        if (!err || err.name !== 'AbortError') exportJSON();
+      }
+    }
+
+    function importJSON(ev) {
+      const file = ev.target.files[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (!data.products || !data.cards) throw new Error('File non valido');
+          state = data; saveLocal(); renderAll();
+          alert('Backup ripristinato con successo!');
+        } catch (err) { alert('Errore ripristino: ' + err.message); }
+      };
+      reader.readAsText(file);
+    }
+
+    function resetAllData() {
+      if (!confirm('Attenzione: cancellerai tutte le tessere e i movimenti salvati sul telefono per tornare ai dati demo. Procedere?')) return;
+      state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+      saveLocal();
+      renderAll();
+    }
+
+    function renderAll() {
+      renderPOS();
+      renderCards();
+      renderCatalogAndTx();
+      renderBackupStats();
+    }
+
+    // ===== MANUALE D'USO INTEGRATO & PDF =====
+    function scrollToManualSec(secId) {
+      const el = document.getElementById(secId);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function filterManualSections() {
+      const q = (document.getElementById('manualSearchInput').value || '').trim().toLowerCase();
+      document.querySelectorAll('.manual-card').forEach(card => {
+        const match = !q || card.textContent.toLowerCase().includes(q);
+        card.classList.toggle('hidden', !match);
+      });
+    }
+
+    function showManualFeedback(ok, message) {
+      const fb = document.getElementById('manualPdfFeedback');
+      if (!fb) return;
+      fb.classList.remove('hidden');
+      fb.className = ok
+        ? 'p-2.5 rounded-xl text-xs bg-emerald-500/20 border border-emerald-500/40 text-emerald-200'
+        : 'p-2.5 rounded-xl text-xs bg-rose-500/20 border border-rose-500/40 text-rose-200';
+      fb.innerHTML = message;
+    }
+
+    function buildManualFallbackPdfBlob() {
+      if (window.jspdf && window.jspdf.jsPDF) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        doc.setFillColor(15, 23, 42);
+        doc.rect(0, 0, 210, 26, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(14);
+        doc.text("BAR 4 TORRI — MANUALE D'USO POS NFC & QR", 14, 12);
+        doc.setFontSize(8.5);
+        doc.setTextColor(148, 163, 184);
+        doc.text("Versione 1.0.0 • Creatore: Loiodice Michele", 14, 19);
+
+        let y = 34;
+        document.querySelectorAll('.manual-card').forEach(card => {
+          const title = (card.querySelector('h3')?.textContent || '').trim();
+          const body = (card.innerText || '').replace(title, '').trim();
+          if (y > 265) { doc.addPage(); y = 18; }
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(11);
+          doc.setTextColor(15, 23, 42);
+          doc.text(title, 14, y);
+          y += 5;
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9);
+          doc.setTextColor(51, 65, 85);
+          const wrapped = doc.splitTextToSize(body, 182);
+          wrapped.forEach(line => {
+            if (y > 280) { doc.addPage(); y = 18; }
+            doc.text(line, 14, y);
+            y += 4.3;
+          });
+          y += 4;
+        });
+        return doc.output('blob');
+      }
+      const txt = Array.from(document.querySelectorAll('.manual-card')).map(c => c.innerText.trim()).join('\n\n');
+      return new Blob([txt], { type: 'text/plain;charset=utf-8' });
+    }
+
+    async function getUserManualPdfBlob() {
+      try {
+        const resp = await fetch('./manuale_uso_bar4torri_pos.pdf');
+        if (resp && resp.ok) {
+          return await resp.blob();
+        }
+      } catch {}
+      return buildManualFallbackPdfBlob();
+    }
+
+    async function downloadUserManualPdf() {
+      try {
+        const blob = await getUserManualPdfBlob();
+        const filename = 'manuale_uso_bar4torri_pos.pdf';
+        const savedPath = await saveFileCrossPlatform(blob, filename, 'application/pdf');
+        beep(true);
+        showManualFeedback(true, `<b>✅ Manuale d'Uso PDF scaricato!</b><br/>Posizione: <span class="font-mono">${savedPath}</span>`);
+      } catch (err) {
+        beep(false);
+        showManualFeedback(false, `<b>Errore scaricamento manuale PDF:</b> ${err.message || err}`);
+      }
+    }
+
+    async function shareUserManualPdf() {
+      try {
+        const blob = await getUserManualPdfBlob();
+        const filename = 'manuale_uso_bar4torri_pos.pdf';
+        const shared = await shareFileCrossPlatform(
+          blob,
+          filename,
+          'application/pdf',
+          "Manuale d'Uso Bar 4 Torri POS",
+          "Manuale d'Uso operativo dell'app Bar 4 Torri POS NFC & QR"
+        );
+        beep(true);
+        if (shared) {
+          showManualFeedback(true, '<b>✅ Finestra di condivisione aperta!</b> Puoi inviare il manuale PDF su WhatsApp, Drive o stamparlo.');
+        } else {
+          showManualFeedback(true, `<b>✅ Manuale PDF scaricato in locale:</b> ${filename}`);
+        }
+      } catch (err) {
+        if (err && err.name === 'AbortError') return;
+        beep(false);
+        showManualFeedback(false, `<b>Errore condivisione manuale PDF:</b> ${err.message || err}`);
+      }
+    }
+
+    // ===== LIVE UPDATE ENGINE (ZIP LOCALE + GITHUB) =====
+    const GH_CFG_KEY = 'bar4torri_gh_update_cfg';
+    const DEFAULT_GH_REPO = 'Giudic3/Bar-4T';
+    const DEFAULT_GH_BRANCH = 'main';
+
+    function normalizeGhRepo(raw) {
+      let s = String(raw || '').trim();
+      if (!s) return DEFAULT_GH_REPO;
+      s = s.replace(/\s+/g, '-');
+      if (!s.includes('/')) s = 'Giudic3/' + s;
+      return s;
+    }
+
+    function getLiveUpdatePlugin() {
+      return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LiveUpdate) || null;
+    }
+
+    function showLiveUpdateFeedback(ok, message) {
+      const fb = document.getElementById('liveUpdateFeedback');
+      if (!fb) return;
+      fb.classList.remove('hidden');
+      fb.className = ok
+        ? 'p-2.5 rounded-xl text-xs bg-emerald-500/20 border border-emerald-500/40 text-emerald-200'
+        : 'p-2.5 rounded-xl text-xs bg-rose-500/20 border border-rose-500/40 text-rose-200';
+      fb.innerHTML = message;
+    }
+
+    async function initLiveUpdateUI() {
+      document.getElementById('ghRepoInput').value = DEFAULT_GH_REPO;
+      document.getElementById('ghBranchInput').value = DEFAULT_GH_BRANCH;
+      try {
+        const savedCfg = JSON.parse(localStorage.getItem(GH_CFG_KEY) || 'null');
+        if (savedCfg) {
+          if (savedCfg.repo) document.getElementById('ghRepoInput').value = normalizeGhRepo(savedCfg.repo);
+          if (savedCfg.branch) document.getElementById('ghBranchInput').value = savedCfg.branch;
+          if (savedCfg.token) document.getElementById('ghTokenInput').value = savedCfg.token;
+        }
+      } catch {}
+
+      const livePlugin = getLiveUpdatePlugin();
+      const badge = document.getElementById('liveBundleStatusBadge');
+      const resetBtn = document.getElementById('btnResetBuiltInBundle');
+      if (!livePlugin || !livePlugin.getBundleInfo) {
+        if (badge) badge.textContent = 'Modalità Browser / PWA';
+        return;
+      }
+      try {
+        const info = await livePlugin.getBundleInfo();
+        if (info && info.isLiveActive) {
+          badge.className = 'px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold';
+          badge.textContent = `Aggiornato: ${info.updatedAt || 'Live'}`;
+          if (resetBtn) resetBtn.classList.remove('hidden');
+        } else {
+          badge.textContent = 'Versione Integrata APK';
+          if (resetBtn) resetBtn.classList.add('hidden');
+        }
+      } catch {}
+    }
+
+    async function handleLocalZipUpdate(ev) {
+      const file = ev.target.files && ev.target.files[0];
+      ev.target.value = '';
+      if (!file) return;
+
+      const livePlugin = getLiveUpdatePlugin();
+      if (!livePlugin || !livePlugin.applyZipUpdate) {
+        showLiveUpdateFeedback(false, '<b>Funzione disponibile nell\'APK Android:</b> installa l\'APK v14 per applicare pacchetti ZIP direttamente sul telefono.');
+        return;
+      }
+
+      try {
+        showLiveUpdateFeedback(true, '⏳ Installazione pacchetto aggiornamento in corso...');
+        const base64 = await blobToBase64(file);
+        await livePlugin.applyZipUpdate({ base64, sourceLabel: file.name });
+        beep(true);
+        showLiveUpdateFeedback(true, '<b>✅ Aggiornamento applicato!</b> Riavvio interfaccia in corso...');
+      } catch (err) {
+        beep(false);
+        showLiveUpdateFeedback(false, `<b>Errore aggiornamento ZIP:</b> ${err.message || err}`);
+      }
+    }
+
+    async function runGitHubLiveUpdate() {
+      const repo = normalizeGhRepo(document.getElementById('ghRepoInput').value);
+      const branch = (document.getElementById('ghBranchInput').value || DEFAULT_GH_BRANCH).trim() || DEFAULT_GH_BRANCH;
+      const token = (document.getElementById('ghTokenInput').value || '').trim();
+
+      document.getElementById('ghRepoInput').value = repo;
+      localStorage.setItem(GH_CFG_KEY, JSON.stringify({ repo, branch, token }));
+
+      const livePlugin = getLiveUpdatePlugin();
+      if (!livePlugin || !livePlugin.updateFromGitHub) {
+        showLiveUpdateFeedback(false, '<b>Funzione disponibile nell\'APK Android:</b> installa l\'APK v14 per scaricare gli aggiornamenti da GitHub con 1 tap.');
+        return;
+      }
+
+      try {
+        showLiveUpdateFeedback(true, `⏳ Download aggiornamento da <b>${repo}</b> (${branch}) in corso...`);
+        await livePlugin.updateFromGitHub({ repo, branch, token });
+        beep(true);
+        showLiveUpdateFeedback(true, '<b>✅ App aggiornata da GitHub!</b> Ricaricamento interfaccia in corso...');
+      } catch (err) {
+        beep(false);
+        showLiveUpdateFeedback(false, `<b>Errore aggiornamento GitHub:</b> ${err.message || err}`);
+      }
+    }
+
+    async function resetLiveBundle() {
+      const livePlugin = getLiveUpdatePlugin();
+      if (!livePlugin || !livePlugin.resetToBuiltIn) return;
+      if (!confirm('Vuoi tornare alla versione originale inclusa nell\'APK? I dati delle tessere e i movimenti non verranno toccati.')) return;
+      try {
+        await livePlugin.resetToBuiltIn();
+      } catch (err) {
+        showLiveUpdateFeedback(false, `<b>Errore ripristino:</b> ${err.message || err}`);
+      }
+    }
+
+    // ===== INIT =====
+    const hasNativeNfc = !!(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.CapacitorNfc);
+    document.getElementById('nfcSupportBadge').textContent = hasNativeNfc
+      ? '• 📡 NFC Nativo APK Pronto'
+      : (('NDEFReader' in window) ? '• 📡 Web NFC Pronto' : '• 📷 QR / Manuale');
+    try {
+      renderAll();
+      initLiveUpdateUI();
+    } catch (initErr) {
+      console.error('Errore avvio POS:', initErr);
+    }
+    setTimeout(() => {
+      if (typeof window.dismissSplash === 'function') window.dismissSplash();
+    }, 1750);
+  </script>
+</body>
+</html>
