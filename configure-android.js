@@ -479,12 +479,14 @@ public class LiveUpdatePlugin extends Plugin {
         if (!repo.contains("/")) repo = "Giudic3/" + repo;
         if (branch.isEmpty()) branch = "main";
 
+        final String finalRepo = repo;
         final String finalBranch = branch;
+        final String finalToken = token;
         new Thread(() -> {
             try {
-                String zipUrl = "https://api.github.com/repos/" + repo + "/zipball/" + finalBranch;
-                byte[] zipBytes = downloadWithRedirects(zipUrl, token, 5);
-                String label = "GitHub (" + repo + "@" + finalBranch + ")";
+                String zipUrl = "https://api.github.com/repos/" + finalRepo + "/zipball/" + finalBranch;
+                byte[] zipBytes = downloadWithRedirects(zipUrl, finalToken, 5);
+                String label = "GitHub (" + finalRepo + "@" + finalBranch + ")";
                 installZipBytesAndReload(zipBytes, label);
                 JSObject ret = new JSObject();
                 ret.put("ok", true);
